@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nkama-fact-benchmark"
+version = "0.1.21"
+description = "Evidence-gated benchmark for testing whether AI assistants can prove what they claim."
+readme = "README_PYPI.md"
+requires-python = ">=3.9"
+authors = [
+  { name = "KK Nkama" }
+]
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+keywords = [
+  "ai",
+  "benchmark",
+  "evidence",
+  "verification",
+  "prompt-engineering",
+  "agents"
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Software Development :: Testing",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence"
+]
+dependencies = []
+
+[project.scripts]
+nkama-fact-benchmark = "nkama_fact_benchmark.fact_benchmark:main"
+nkama-evidence-layer = "nkama_fact_benchmark.evidence_layer:main"
+nkama-prompt-filter = "nkama_fact_benchmark.prompt_filter:main"
+nkama-truth-filter = "nkama_fact_benchmark.truth_filter:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["nkama_fact_benchmark*"]

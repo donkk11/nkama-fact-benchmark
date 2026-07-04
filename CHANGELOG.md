@@ -1,6 +1,15 @@
 # Changelog
 
-## 0.1.22 — unreleased (tag v0.1.22 to publish via Trusted Publishing)
+## 0.1.23 — unreleased
+
+- Added explicit `permission_request` output for blocked `agent-run` provider
+  calls. Blocked runs now tell the user what must be approved next: external
+  model access, provider CLI availability, scoped tool access, budget cap, and
+  timeout.
+- The public selftest now verifies that blocked external-model runs include a
+  permission request with budget and timeout suggestions.
+
+## 0.1.22 — 2026-07-04 (on PyPI)
 
 - Added Homepage/Repository/Issues URLs to package metadata. This fixes the
   externally reported finding that the PyPI page exposed no repository link
@@ -10,6 +19,9 @@
   description instead of relying on missing package metadata.
 - Added this changelog, SECURITY.md, RECOMMENDED_RUN.md, and the GitHub
   Actions Trusted Publishing workflow to the repository.
+- Note: 0.1.22 was published manually with a project token after the first
+  Trusted Publishing attempt failed because PyPI had no matching publisher
+  configured.
 
 ## 0.1.21 — 2026-07-03 (on PyPI)
 

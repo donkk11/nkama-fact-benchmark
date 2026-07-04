@@ -383,10 +383,15 @@ def check_agent_run_permission_gate() -> dict[str, Any]:
         allow_external_model=False,
     )
     model_run = payload["model_run"]
+    permission_request = model_run.get("permission_request") or {}
     assertions = {
         "external_model_call_blocked_by_default": payload["status"] == "blocked",
         "model_call_not_run": model_run["model_call"] == "not_run",
         "blocked_report_written": (temp / "MODEL_RUN_REPORT.json").exists(),
+        "permission_request_written": permission_request.get("status") == "needs_user_permission",
+        "permission_request_asks_for_external_model": "external_model_access" in permission_request.get("requested", []),
+        "permission_request_suggests_budget": "--max-budget-usd" in permission_request.get("suggested_flags", []),
+        "permission_request_suggests_timeout": "--timeout-seconds" in permission_request.get("suggested_flags", []),
     }
     limitations = [name for name, passed in assertions.items() if not passed]
     return {

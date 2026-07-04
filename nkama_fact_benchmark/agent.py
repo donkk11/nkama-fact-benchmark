@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import shlex
 import subprocess
 from pathlib import Path
 from typing import Any
@@ -296,6 +297,16 @@ def _extract_provider_answer(stdout: str) -> tuple[str, dict[str, Any]]:
             "stop_reason": payload.get("stop_reason"),
         }
         return payload["result"].strip(), metadata
+    if isinstance(payload, dict):
+        metadata = {
+            "kind": "json_without_result",
+            "type": payload.get("type"),
+            "subtype": payload.get("subtype"),
+            "is_error": payload.get("is_error"),
+            "total_cost_usd": payload.get("total_cost_usd"),
+            "stop_reason": payload.get("stop_reason"),
+        }
+        return json.dumps(payload, indent=2), metadata
     return json.dumps(payload, indent=2), {"kind": "json_without_result"}
 
 
@@ -419,6 +430,107 @@ def _evidence_summary_line(evidence_summary: dict[str, Any] | None) -> str:
     )
 
 
+def _suggested_permission_flags(
+    *,
+    allow_external_model: bool,
+    allow_claude_tools: bool,
+    max_budget_usd: str | None,
+    timeout_seconds: int,
+) -> list[str]:
+    flags: list[str] = []
+    if not allow_external_model:
+        flags.append("--allow-external-model")
+    if not allow_claude_tools:
+        flags.append("--allow-claude-tools")
+    if not max_budget_usd:
+        flags.extend(["--max-budget-usd", "2.00"])
+    flags.extend(["--timeout-seconds", str(max(timeout_seconds, 300))])
+    return flags
+
+
+def _permission_request(
+    *,
+    provider: str,
+    model: str,
+    reason: str,
+    output_dir: str,
+    allow_external_model: bool,
+    allow_claude_tools: bool,
+    max_budget_usd: str | None,
+    timeout_seconds: int,
+    provider_metadata: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    metadata = provider_metadata or {}
+    reason_lower = " ".join(
+        str(item).lower()
+        for item in [
+            reason,
+            metadata.get("subtype"),
+            metadata.get("stop_reason"),
+            metadata.get("kind"),
+        ]
+        if item
+    )
+    requested: list[str] = []
+    questions: list[str] = []
+    if not allow_external_model or "external model calls are disabled" in reason_lower:
+        requested.append("external_model_access")
+        questions.append(f"Do you allow Nkama to call `{provider}` model `{model}` for this task?")
+    if "no such file or directory" in reason_lower or "could not run provider command" in reason_lower:
+        requested.append("provider_cli_available")
+        questions.append(
+            "Is the provider CLI installed and authenticated in this sandbox, or should the user run this command in a terminal where it is available?"
+        )
+    if "max_budget" in reason_lower or "budget" in reason_lower:
+        requested.append("higher_budget_cap")
+        questions.append("What maximum provider budget should be allowed for the rerun?")
+    if "timeout" in reason_lower:
+        requested.append("higher_timeout")
+        questions.append("What timeout in seconds should be allowed for the rerun?")
+    if not allow_claude_tools:
+        requested.append("scoped_tool_access")
+        questions.append("Should the provider receive scoped Read/Edit/Bash tools for the prepared output folder?")
+    if not requested:
+        requested.extend(["external_model_access", "budget_cap", "timeout_limit"])
+        questions.append("Review the blocked reason, then choose whether to grant external model access, a budget cap, and a timeout.")
+    flags = _suggested_permission_flags(
+        allow_external_model=allow_external_model,
+        allow_claude_tools=allow_claude_tools,
+        max_budget_usd=max_budget_usd,
+        timeout_seconds=timeout_seconds,
+    )
+    return {
+        "status": "needs_user_permission",
+        "blocked_reason": reason,
+        "requested": _unique(requested),
+        "questions": questions,
+        "safe_defaults": {
+            "max_budget_usd": max_budget_usd or "2.00",
+            "timeout_seconds": max(timeout_seconds, 300),
+            "output_dir": output_dir,
+            "tools": "scoped Read/Edit/Bash only when --allow-claude-tools is set",
+        },
+        "suggested_flags": flags,
+        "human_next_step": (
+            "Ask the user to approve external model access, choose a budget cap, choose a timeout, "
+            "and confirm the provider CLI is installed/authenticated. Then rerun agent-run with the suggested flags."
+        ),
+    }
+
+
+def _permission_request_text(request: dict[str, Any]) -> str:
+    questions = "\n".join(f"- {item}" for item in request.get("questions", []))
+    flags = " ".join(shlex.quote(str(item)) for item in request.get("suggested_flags", []))
+    safe_defaults = request.get("safe_defaults", {})
+    return (
+        "Permission request:\n"
+        f"{questions}\n"
+        f"- Suggested budget cap: `{safe_defaults.get('max_budget_usd')}`\n"
+        f"- Suggested timeout: `{safe_defaults.get('timeout_seconds')}` seconds\n"
+        f"- Suggested rerun flags: `{flags}`\n"
+    )
+
+
 def _compose_runner_answer(
     *,
     payload: dict[str, Any],
@@ -484,13 +596,37 @@ def _compose_runner_answer(
     )
 
 
-def _blocked_report(payload: dict[str, Any], *, provider: str, reason: str) -> dict[str, Any]:
+def _blocked_report(
+    payload: dict[str, Any],
+    *,
+    provider: str,
+    reason: str,
+    model: str = DEFAULT_CLAUDE_MODEL,
+    allow_external_model: bool = False,
+    allow_claude_tools: bool = False,
+    max_budget_usd: str | None = None,
+    timeout_seconds: int = 120,
+    provider_metadata: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    permission_request = _permission_request(
+        provider=provider,
+        model=model,
+        reason=reason,
+        output_dir=payload["output_dir"],
+        allow_external_model=allow_external_model,
+        allow_claude_tools=allow_claude_tools,
+        max_budget_usd=max_budget_usd,
+        timeout_seconds=timeout_seconds,
+        provider_metadata=provider_metadata,
+    )
     report = {
         "schema_version": 1,
         "status": "blocked",
         "provider": provider,
+        "model": model,
         "model_call": "not_run",
         "reason": reason,
+        "permission_request": permission_request,
         "output_dir": payload["output_dir"],
         "answer": payload["ai_output_dir"] + "/ANSWER.md",
         "evidence_manifest": payload["evidence_manifest"],
@@ -538,10 +674,24 @@ def run_agent_model(
             payload,
             provider=provider,
             reason="External model calls are disabled. Rerun with --allow-external-model after reviewing the task and data.",
+            model=model,
+            allow_external_model=allow_external_model,
+            allow_claude_tools=allow_claude_tools,
+            max_budget_usd=max_budget_usd,
+            timeout_seconds=timeout_seconds,
         )
         return {"schema_version": 1, "status": "blocked", "agent": payload, "model_run": report}
     if provider != "claude":
-        report = _blocked_report(payload, provider=provider, reason=f"Unsupported provider: {provider}")
+        report = _blocked_report(
+            payload,
+            provider=provider,
+            reason=f"Unsupported provider: {provider}",
+            model=model,
+            allow_external_model=allow_external_model,
+            allow_claude_tools=allow_claude_tools,
+            max_budget_usd=max_budget_usd,
+            timeout_seconds=timeout_seconds,
+        )
         return {"schema_version": 1, "status": "blocked", "agent": payload, "model_run": report}
 
     prompt = _agent_model_prompt(payload, tool_policy)
@@ -555,7 +705,16 @@ def run_agent_model(
     try:
         completed = command_runner(command, text=True, capture_output=True, timeout=timeout_seconds, check=False)
     except (OSError, subprocess.TimeoutExpired) as exc:
-        report = _blocked_report(payload, provider=provider, reason=f"Could not run provider command: {exc}")
+        report = _blocked_report(
+            payload,
+            provider=provider,
+            reason=f"Could not run provider command: {exc}",
+            model=model,
+            allow_external_model=allow_external_model,
+            allow_claude_tools=allow_claude_tools,
+            max_budget_usd=max_budget_usd,
+            timeout_seconds=timeout_seconds,
+        )
         report["timeout_seconds"] = timeout_seconds
         _write_json(Path(payload["output_dir"]) / MODEL_RUN_REPORT_JSON, report)
         return {"schema_version": 1, "status": "blocked", "agent": payload, "model_run": report}
@@ -595,6 +754,18 @@ def run_agent_model(
                 encoding="utf-8",
             )
     else:
+        blocked_reason = "Provider subprocess did not produce a verified task answer."
+        permission_request = _permission_request(
+            provider=provider,
+            model=model,
+            reason=blocked_reason,
+            output_dir=payload["output_dir"],
+            allow_external_model=allow_external_model,
+            allow_claude_tools=allow_claude_tools,
+            max_budget_usd=max_budget_usd,
+            timeout_seconds=timeout_seconds,
+            provider_metadata=provider_metadata,
+        )
         answer_path.write_text(
             "Answer:\n"
             "BLOCKED. The external model provider did not produce a verified answer.\n\n"
@@ -604,6 +775,7 @@ def run_agent_model(
             f"Provider stdout excerpt: {_short_text(completed.stdout or '', 500)}\n\n"
             "Limitations:\n"
             "No task answer was generated by the provider. Fix provider authentication/configuration, then rerun.\n\n"
+            f"{_permission_request_text(permission_request)}\n"
             "Files changed or created:\n"
             "ANSWER.md, MODEL_RUN_REPORT.json\n\n"
             "Tests or checks run:\n"
@@ -654,6 +826,19 @@ def run_agent_model(
         "answer": str(answer_path),
         "evidence_manifest": payload["evidence_manifest"],
         "evidence_summary": evidence_report["summary"],
+        "permission_request": _permission_request(
+            provider=provider,
+            model=model,
+            reason="Provider call was blocked/failed, failed the answer contract, or generated output did not satisfy the evidence manifest.",
+            output_dir=payload["output_dir"],
+            allow_external_model=allow_external_model,
+            allow_claude_tools=allow_claude_tools,
+            max_budget_usd=max_budget_usd,
+            timeout_seconds=timeout_seconds,
+            provider_metadata=provider_metadata,
+        )
+        if model_status != "pass"
+        else None,
         "limitations": []
         if model_status == "pass"
         else answer_contract.get("limitations", [])
@@ -756,6 +941,9 @@ def run_model_cli(args: argparse.Namespace) -> dict[str, Any]:
             f"Evidence manifest: {agent['evidence_manifest']}\n"
             f"Evidence summary: {model_run.get('evidence_summary', {})}\n"
         )
+        permission_request = model_run.get("permission_request")
+        if payload["status"] == "blocked" and permission_request:
+            print(_permission_request_text(permission_request))
     return payload
 
 

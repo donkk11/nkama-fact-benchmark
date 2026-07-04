@@ -7,15 +7,15 @@ or public artifact proves it.
 
 - [x] GitHub repository is public: `https://github.com/donkk11/nkama-fact-benchmark`
 - [x] PyPI package is public: `nkama-fact-benchmark`
-- [x] PyPI `0.1.22` exists and includes Homepage, Repository, and Issues links.
+- [x] PyPI `0.1.23` exists and includes Homepage, Repository, and Issues links.
 - [x] Public install works:
 
 ```bash
-uvx --no-cache --from nkama-fact-benchmark==0.1.22 nkama-fact-benchmark selftest
+uvx --no-cache --from nkama-fact-benchmark==0.1.23 nkama-fact-benchmark selftest
 ```
 
 - [x] `0.1.23` source is prepared with blocked-run permission prompts.
-- [ ] `0.1.23` is published to PyPI.
+- [x] `0.1.23` is published to PyPI.
 
 ## Missing Chapter
 

@@ -36,7 +36,7 @@ uvx --no-cache nkama-fact-benchmark capability-test
 
 For a pinned release:
 
-uvx --no-cache --from nkama-fact-benchmark==0.1.22 nkama-fact-benchmark selftest
+uvx --no-cache --from nkama-fact-benchmark==0.1.23 nkama-fact-benchmark selftest
 
 It is early alpha. It does not make an AI magically truthful; it makes claims
 easier to verify. Right now it is strongest for file evidence, command checks,

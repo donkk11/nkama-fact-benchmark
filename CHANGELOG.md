@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.1.23 — unreleased
+## 0.1.23 — 2026-07-04 (on PyPI)
 
 - Added explicit `permission_request` output for blocked `agent-run` provider
   calls. Blocked runs now tell the user what must be approved next: external

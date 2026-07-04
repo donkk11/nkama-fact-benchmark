@@ -62,9 +62,9 @@ uvx --no-cache nkama-fact-benchmark agent-run "MY TASK" \
   --allow-external-model --allow-claude-tools \
   --allow-command "uvx *" --allow-command "python3 *" \
   --max-budget-usd 2 --timeout-seconds 300 \
-  --output ~/Documents/nkama_bridge_run --overwrite
+  --output ./nkama_bridge_run --overwrite
 Then verify independently:
-uvx --no-cache --from nkama-fact-benchmark nkama-evidence-layer ~/Documents/nkama_bridge_run/ai_output/evidence_manifest.json --allow-commands
+uvx --no-cache --from nkama-fact-benchmark nkama-evidence-layer ./nkama_bridge_run/ai_output/evidence_manifest.json --allow-commands
 Report pass/fail/blocked with the evidence summary and the provider-reported cost.
 ```
 
@@ -73,8 +73,8 @@ timeout — declared before it starts. The controller re-runs the evidence
 checks itself instead of trusting the builder's summary.
 
 Notes: each provider CLI must be installed and authenticated separately and
-bills separately; write outputs somewhere permanent (not /tmp, which macOS
-wipes on reboot). Field results for this exact pattern: Codex drove Claude
+bills separately; write outputs somewhere you control and can inspect later.
+Field results for this exact pattern: Codex drove Claude
 Sonnet 4.6 (3/3 checks, provider-reported $0.0349) and Claude Fable 5
 (10/10 checks) with independent re-verification afterward.
 

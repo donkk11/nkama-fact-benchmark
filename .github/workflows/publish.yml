@@ -2,7 +2,7 @@ name: Publish to PyPI (Trusted Publishing)
 
 # Publishes when you push a version tag like v0.1.22.
 # One-time setup on PyPI: project Settings -> Publishing -> add GitHub
-# publisher (owner: kknkama, repo: nkama-fact-benchmark, workflow:
+# publisher (owner: donkk11, repo: nkama-fact-benchmark, workflow:
 # publish.yml, environment: pypi). No API token needed after that.
 
 on:

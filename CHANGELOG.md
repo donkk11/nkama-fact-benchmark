@@ -6,6 +6,8 @@
   externally reported finding that the PyPI page exposed no repository link
   (the fix missed the 0.1.21 upload, which shipped without project.urls).
 - Added version-pinning guidance for CI to the README.
+- Added `README_PYPI.md` so the PyPI release page has a public-safe long
+  description instead of relying on missing package metadata.
 - Added this changelog, SECURITY.md, RECOMMENDED_RUN.md, and the GitHub
   Actions Trusted Publishing workflow to the repository.
 

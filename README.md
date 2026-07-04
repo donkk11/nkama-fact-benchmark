@@ -65,6 +65,12 @@ wired into the manifest as command checks) verified 8/8 and 7/7 with zero
 blocked evidence — and the physics check caught a real, human-missed
 impossible jump in a handmade level.
 
+For CI or any reproducible workflow, pin the version:
+
+```bash
+uvx --from 'nkama-fact-benchmark==0.1.22' nkama-fact-benchmark selftest
+```
+
 Before publishing or sharing a built package, audit the release files:
 
 ```bash

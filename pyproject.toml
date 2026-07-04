@@ -36,6 +36,11 @@ classifiers = [
 ]
 dependencies = []
 
+[project.urls]
+Homepage = "https://github.com/kknkama/nkama-fact-benchmark"
+Repository = "https://github.com/kknkama/nkama-fact-benchmark"
+Issues = "https://github.com/kknkama/nkama-fact-benchmark/issues"
+
 [project.scripts]
 nkama-fact-benchmark = "nkama_fact_benchmark.fact_benchmark:main"
 nkama-evidence-layer = "nkama_fact_benchmark.evidence_layer:main"

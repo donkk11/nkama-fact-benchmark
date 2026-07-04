@@ -46,6 +46,38 @@ This mode grants scoped provider tools only when explicitly requested. The
 output folder is allowed automatically; add `--allowed-dir PATH` only when the
 model needs another directory.
 
+## The Bridge — two agents, one contract, no MCP
+
+If you use both Codex and Claude Code (or any two terminal agents), you do
+not need an MCP server, plugins, or a third-party orchestrator to make them
+work together. One agent is the controller/verifier; the other is the
+builder. The bridge is a single command.
+
+Paste this into your controller agent (for example, Codex):
+
+```text
+Run this, then verify the output folder:
+uvx --no-cache nkama-fact-benchmark agent-run "MY TASK" \
+  --provider claude --model claude-sonnet-4-6 \
+  --allow-external-model --allow-claude-tools \
+  --allow-command "uvx *" --allow-command "python3 *" \
+  --max-budget-usd 2 --timeout-seconds 300 \
+  --output ~/Documents/nkama_bridge_run --overwrite
+Then verify independently:
+uvx --no-cache --from nkama-fact-benchmark nkama-evidence-layer ~/Documents/nkama_bridge_run/ai_output/evidence_manifest.json --allow-commands
+Report pass/fail/blocked with the evidence summary and the provider-reported cost.
+```
+
+The builder gets scoped tools, an allowed folder, a budget cap, and a
+timeout — declared before it starts. The controller re-runs the evidence
+checks itself instead of trusting the builder's summary.
+
+Notes: each provider CLI must be installed and authenticated separately and
+bills separately; write outputs somewhere permanent (not /tmp, which macOS
+wipes on reboot). Field results for this exact pattern: Codex drove Claude
+Sonnet 4.6 (3/3 checks, provider-reported $0.0349) and Claude Fable 5
+(10/10 checks) with independent re-verification afterward.
+
 ---
 
 ## Verified case studies (reproduce them yourself)

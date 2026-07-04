@@ -21,7 +21,7 @@ uvx nkama-fact-benchmark selftest
 For reproducible runs, pin the version:
 
 ```bash
-uvx --from 'nkama-fact-benchmark==0.1.23' nkama-fact-benchmark selftest
+uvx --from 'nkama-fact-benchmark==0.1.24' nkama-fact-benchmark selftest
 ```
 
 ## What It Helps With

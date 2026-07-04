@@ -8,6 +8,8 @@ or public artifact proves it.
 - [x] GitHub repository is public: `https://github.com/donkk11/nkama-fact-benchmark`
 - [x] PyPI package is public: `nkama-fact-benchmark`
 - [x] PyPI `0.1.23` exists and includes Homepage, Repository, and Issues links.
+- [x] PyPI Trusted Publisher is configured:
+  `donkk11 / nkama-fact-benchmark / publish.yml / environment: pypi`.
 - [x] Public install works:
 
 ```bash
@@ -16,12 +18,15 @@ uvx --no-cache --from nkama-fact-benchmark==0.1.23 nkama-fact-benchmark selftest
 
 - [x] `0.1.23` source is prepared with blocked-run permission prompts.
 - [x] `0.1.23` is published to PyPI.
+- [x] `0.1.24` source is prepared as a Trusted Publishing verification
+  release.
+- [ ] `0.1.24` is published through GitHub Actions Trusted Publishing.
 
 ## Missing Chapter
 
 ### 1. `pypi_publisher_configured`
 
-Status: not verified.
+Status: configured on PyPI, pending automated release proof.
 
 Manual project-token publishing works, but it does **not** configure Trusted
 Publishing. Trusted Publishing means GitHub Actions can publish future releases
@@ -37,7 +42,8 @@ Workflow filename: publish.yml
 Environment: pypi
 ```
 
-Only the PyPI project owner can configure this in the PyPI web account.
+Configured by the PyPI project owner on 2026-07-04. Final proof requires a
+tag-triggered GitHub Actions publish to PyPI.
 
 ### 2. `sponsors_enabled`
 

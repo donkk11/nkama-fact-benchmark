@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.24 — 2026-07-04
+
+- Trusted Publishing verification release. PyPI now has a GitHub Actions
+  Trusted Publisher configured for `donkk11/nkama-fact-benchmark`,
+  workflow `publish.yml`, environment `pypi`.
+- No runtime behavior changes from 0.1.23; this release exists to prove the
+  token-free GitHub-to-PyPI release path.
+
 ## 0.1.23 — 2026-07-04 (on PyPI)
 
 - Added explicit `permission_request` output for blocked `agent-run` provider

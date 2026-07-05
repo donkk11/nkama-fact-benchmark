@@ -15,13 +15,14 @@ uvx nkama-fact-benchmark activate
 uvx nkama-fact-benchmark prepare "Build a browser game with tests."
 uvx nkama-fact-benchmark capability-test
 uvx nkama-fact-benchmark inspect path/to/nkama_run
+uvx nkama-fact-benchmark pilot-harness --phase A
 uvx nkama-fact-benchmark selftest
 ```
 
 For reproducible runs, pin the version:
 
 ```bash
-uvx --from 'nkama-fact-benchmark==0.1.24' nkama-fact-benchmark selftest
+uvx --from 'nkama-fact-benchmark==0.1.25' nkama-fact-benchmark selftest
 ```
 
 ## What It Helps With
@@ -31,6 +32,8 @@ uvx --from 'nkama-fact-benchmark==0.1.24' nkama-fact-benchmark selftest
 - Test whether the current sandbox can write files, run Python, and use `uvx`.
 - Inspect generated folders and classify them as design-only, incomplete,
   blocked, failed, or verified.
+- Prepare publication-style research harnesses for SWE-bench Verified and
+  FEVER/TruthfulQA scope experiments.
 - Mark missing evidence as `BLOCKED` instead of pretending it passed.
 
 ## Core Rule

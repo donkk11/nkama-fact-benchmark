@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "run_id": "run_20260704T033027_09189a75",
+  "title": "Nkama Agent Run",
+  "created_at": "2026-07-04T03:30:27.118154+00:00",
+  "principle": "fact_verified_only",
+  "status": "prepared",
+  "prompt_files": {
+    "original": "original_prompt.md",
+    "evidence_wrapped": "evidence_prompt.md",
+    "analysis": "prompt_analysis.json"
+  },
+  "output": {
+    "directory": "ai_output",
+    "evidence_manifest": "ai_output/evidence_manifest.json"
+  },
+  "safety": {
+    "external_model_calls": "not_run_by_public_default",
+    "command_execution": "not_run_without_explicit_allow_commands",
+    "blocked_evidence_counts_as_success": false,
+    "private_files_read_by_default": false,
+    "first_run_builds": false,
+    "protocol_state_file": "NKAMA_SESSION_STATE.md when sandbox file storage is available"
+  },
+  "next_commands": {
+    "verify_files_only": "uvx --from nkama-fact-benchmark nkama-evidence-layer ai_output/evidence_manifest.json",
+    "verify_with_reviewed_commands": "uvx --from nkama-fact-benchmark nkama-evidence-layer ai_output/evidence_manifest.json --allow-commands"
+  }
+}

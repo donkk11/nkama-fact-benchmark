@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "allowed_command_prefixes": [["node"]],
+  "checks": [
+    {
+      "id": "answer_file_exists",
+      "name": "Answer file exists",
+      "type": "file_exists",
+      "path": "ANSWER.md"
+    },
+    {
+      "id": "answer_mentions_evidence",
+      "name": "Answer mentions evidence",
+      "type": "file_contains",
+      "path": "ANSWER.md",
+      "text": "Evidence:"
+    },
+    {
+      "id": "answer_mentions_limitations",
+      "name": "Answer mentions limitations",
+      "type": "file_contains",
+      "path": "ANSWER.md",
+      "text": "Limitations:"
+    },
+    {
+      "id": "stage_generator_exists",
+      "name": "Stage generator module exists (live file probe)",
+      "type": "command_exit_zero",
+      "command": ["node", "-e", "process.exit(require('fs').existsSync('/Users/kknkama/Documents/openklaw/ai_control_layer/tesxting chatgpt/emberfall_courier/src/stageGen.js') ? 0 : 1)"],
+      "timeout_seconds": 30
+    },
+    {
+      "id": "game_core_uses_generator",
+      "name": "gameCore.js imports and appends the generated stages (live file probe)",
+      "type": "command_exit_zero",
+      "command": ["node", "-e", "process.exit(require('fs').readFileSync('/Users/kknkama/Documents/openklaw/ai_control_layer/tesxting chatgpt/emberfall_courier/src/gameCore.js','utf8').includes('generateExtraStageDefs') ? 0 : 1)"],
+      "timeout_seconds": 30
+    },
+    {
+      "id": "verification_tests_exist",
+      "name": "Stage verification test file exists (live file probe)",
+      "type": "command_exit_zero",
+      "command": ["node", "-e", "process.exit(require('fs').existsSync('/Users/kknkama/Documents/openklaw/ai_control_layer/tesxting chatgpt/emberfall_courier/tests/verify_stages.mjs') ? 0 : 1)"],
+      "timeout_seconds": 30
+    },
+    {
+      "id": "core_game_tests_pass",
+      "name": "Original game-core test suite passes with 73 stages",
+      "type": "command_exit_zero",
+      "command": ["node", "/Users/kknkama/Documents/openklaw/ai_control_layer/tesxting chatgpt/emberfall_courier/tests/gameCore.test.js"],
+      "timeout_seconds": 120
+    },
+    {
+      "id": "stage_verification_passes",
+      "name": "73 stages verified: count, uniqueness, reachability, simulation, determinism",
+      "type": "command_exit_zero",
+      "command": ["node", "/Users/kknkama/Documents/openklaw/ai_control_layer/tesxting chatgpt/emberfall_courier/tests/verify_stages.mjs"],
+      "timeout_seconds": 120
+    }
+  ]
+}

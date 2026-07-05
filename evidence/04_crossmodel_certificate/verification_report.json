@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "run_id": "evidence_20260705T165904_4e429c56",
+  "generated_at": "2026-07-05T16:59:04.536616+00:00",
+  "manifest": "/Users/kknkama/Documents/openklaw/ai_control_layer/nkama_run_crossmodel_certificate/ai_output/evidence_manifest.json",
+  "principle": "fact_verified_only",
+  "summary": {
+    "checks_run": 3,
+    "pass": 3,
+    "fail": 0,
+    "blocked": 0,
+    "passed_all_unblocked": true,
+    "clean_pass": true
+  },
+  "checks": [
+    {
+      "id": "answer_file_exists",
+      "name": "Answer file exists",
+      "category": "file",
+      "status": "pass",
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "/Users/kknkama/Documents/openklaw/ai_control_layer/nkama_run_crossmodel_certificate/ai_output/ANSWER.md",
+          "size_bytes": 4892,
+          "modified_epoch": 1783138106,
+          "sha256": "bb2a02474fb3b3130885dcb53e342cc4c1276dab39070bbc61f8c667a7e07918"
+        }
+      ],
+      "limitations": []
+    },
+    {
+      "id": "answer_mentions_evidence",
+      "name": "Answer mentions evidence",
+      "category": "file",
+      "status": "pass",
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "/Users/kknkama/Documents/openklaw/ai_control_layer/nkama_run_crossmodel_certificate/ai_output/ANSWER.md",
+          "size_bytes": 4892,
+          "modified_epoch": 1783138106,
+          "sha256": "bb2a02474fb3b3130885dcb53e342cc4c1276dab39070bbc61f8c667a7e07918"
+        },
+        {
+          "kind": "content_match",
+          "matched": true,
+          "text": "Evidence:"
+        }
+      ],
+      "limitations": []
+    },
+    {
+      "id": "answer_mentions_limitations",
+      "name": "Answer mentions limitations",
+      "category": "file",
+      "status": "pass",
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "/Users/kknkama/Documents/openklaw/ai_control_layer/nkama_run_crossmodel_certificate/ai_output/ANSWER.md",
+          "size_bytes": 4892,
+          "modified_epoch": 1783138106,
+          "sha256": "bb2a02474fb3b3130885dcb53e342cc4c1276dab39070bbc61f8c667a7e07918"
+        },
+        {
+          "kind": "content_match",
+          "matched": true,
+          "text": "Limitations:"
+        }
+      ],
+      "limitations": []
+    }
+  ]
+}

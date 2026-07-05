@@ -47,6 +47,7 @@ Common starts:
   uvx nkama-fact-benchmark capability-test
   uvx nkama-fact-benchmark capability-test --deep
   uvx nkama-fact-benchmark inspect path/to/nkama_run
+  uvx nkama-fact-benchmark pilot-harness --phase A
   uvx nkama-fact-benchmark prepare "Build a browser game with tests."
   uvx nkama-fact-benchmark start
   uvx nkama-fact-benchmark agent
@@ -484,6 +485,48 @@ def check_capability_test_smoke() -> dict[str, Any]:
     }
 
 
+def check_pilot_harness_smoke() -> dict[str, Any]:
+    from .evidence_layer import verify_manifest
+    from .pilot import create_pilot_harness
+
+    temp = Path.cwd() / ".nkama_public_selftest" / "pilot_harness"
+    payload = create_pilot_harness(
+        output_dir=temp,
+        phase="A",
+        overwrite=True,
+        swe_task_count=3,
+        model="selftest-fixed-model",
+        cost_budget_usd="0",
+    )
+    report = verify_manifest(payload["evidence_manifest"])
+    phase_dir = temp / "phases" / "phase_a_swebench_smoke"
+    assertions = {
+        "phase_a_created": phase_dir.exists(),
+        "three_conditions_created": all((phase_dir / "conditions" / name).exists() for name in ["baseline_plain", "decomposition_only", "nkama_protocol"]),
+        "preflight_written": (temp / "preflight_report.json").exists() and (temp / "preflight_report.md").exists(),
+        "manifest_passes": report["summary"]["fail"] == 0 and report["summary"]["blocked"] == 0,
+        "status_is_explicit": payload["status"] in {"ready_to_run", "prepared_with_blocked_execution"},
+    }
+    limitations = [name for name, passed in assertions.items() if not passed]
+    return {
+        "id": "pilot_harness_smoke",
+        "name": "Pilot research harness smoke test",
+        "category": "research",
+        "status": "pass" if not limitations else "fail",
+        "evidence": [
+            {
+                "kind": "pilot_harness_result",
+                "output_dir": payload["output_dir"],
+                "phase": payload["phase"],
+                "status": payload["status"],
+                "assertions": assertions,
+                "manifest_summary": report["summary"],
+            }
+        ],
+        "limitations": limitations,
+    }
+
+
 def run_fact_benchmark() -> dict[str, Any]:
     checks = [
         check_intro_identity(),
@@ -496,6 +539,7 @@ def run_fact_benchmark() -> dict[str, Any]:
         check_agent_run_permission_gate(),
         check_inspector_smoke(),
         check_capability_test_smoke(),
+        check_pilot_harness_smoke(),
     ]
     summary = {
         "checks_run": len(checks),
@@ -504,6 +548,7 @@ def run_fact_benchmark() -> dict[str, Any]:
         "blocked": sum(1 for item in checks if item["status"] == "blocked"),
     }
     summary["passed_all_unblocked"] = summary["fail"] == 0
+    summary["clean_pass"] = summary["fail"] == 0 and summary["blocked"] == 0
     return {
         "schema_version": 1,
         "run_id": f"fact_{datetime.now().strftime('%Y%m%dT%H%M%S')}_{uuid.uuid4().hex[:8]}",
@@ -528,6 +573,16 @@ def build_parser() -> argparse.ArgumentParser:
     capability.add_argument("--overwrite", action="store_true")
     capability.add_argument("--deep", action="store_true", help="Also probe CLI tools, Python modules, and network/package-registry reachability.")
     capability.add_argument("--json", action="store_true", help="Print machine-readable JSON.")
+    pilot = sub.add_parser("pilot-harness", help="Create a SWE-bench / FEVER / TruthfulQA research pilot harness.")
+    pilot.add_argument("--phase", choices=["A", "B", "C", "D", "all"], default="A")
+    pilot.add_argument("--output")
+    pilot.add_argument("--overwrite", action="store_true")
+    pilot.add_argument("--swe-task-count", type=int)
+    pilot.add_argument("--swe-instance-id", action="append", default=[])
+    pilot.add_argument("--model", default="fixed_model_placeholder")
+    pilot.add_argument("--time-budget-minutes", type=int, default=30)
+    pilot.add_argument("--cost-budget-usd", default="fixed_cost_placeholder")
+    pilot.add_argument("--json", action="store_true")
     inspect = sub.add_parser("inspect", help="Inspect a Nkama run folder and classify what the AI produced.")
     inspect.add_argument("folder")
     inspect.add_argument("--allow-commands", action="store_true")
@@ -609,6 +664,11 @@ def main() -> None:
             return
         if args.subcommand == "capability-test":
             from .capability import run_cli
+
+            run_cli(args)
+            return
+        if args.subcommand == "pilot-harness":
+            from .pilot import run_cli
 
             run_cli(args)
             return

@@ -1,0 +1,152 @@
+{
+  "schema_version": 1,
+  "run_id": "evidence_20260705T165904_fbb79306",
+  "generated_at": "2026-07-05T16:59:04.612093+00:00",
+  "manifest": "/Users/kknkama/Documents/openklaw/ai_control_layer/nkama_run_reverse_bridge/ai_output/evidence_manifest.json",
+  "principle": "fact_verified_only",
+  "summary": {
+    "checks_run": 7,
+    "pass": 7,
+    "fail": 0,
+    "blocked": 0,
+    "passed_all_unblocked": true,
+    "clean_pass": true
+  },
+  "checks": [
+    {
+      "id": "answer_file_exists",
+      "name": "Answer file exists",
+      "category": "file",
+      "status": "pass",
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "/Users/kknkama/Documents/openklaw/ai_control_layer/nkama_run_reverse_bridge/ai_output/ANSWER.md",
+          "size_bytes": 1054,
+          "modified_epoch": 1783190520,
+          "sha256": "bfd0a3c7a1a0a669cc265a85f9f65a183ed7c5f19e2bf08ace385235843d399a"
+        }
+      ],
+      "limitations": []
+    },
+    {
+      "id": "answer_mentions_evidence",
+      "name": "Answer mentions evidence",
+      "category": "file",
+      "status": "pass",
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "/Users/kknkama/Documents/openklaw/ai_control_layer/nkama_run_reverse_bridge/ai_output/ANSWER.md",
+          "size_bytes": 1054,
+          "modified_epoch": 1783190520,
+          "sha256": "bfd0a3c7a1a0a669cc265a85f9f65a183ed7c5f19e2bf08ace385235843d399a"
+        },
+        {
+          "kind": "content_match",
+          "matched": true,
+          "text": "Evidence:"
+        }
+      ],
+      "limitations": []
+    },
+    {
+      "id": "answer_mentions_limitations",
+      "name": "Answer mentions limitations",
+      "category": "file",
+      "status": "pass",
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "/Users/kknkama/Documents/openklaw/ai_control_layer/nkama_run_reverse_bridge/ai_output/ANSWER.md",
+          "size_bytes": 1054,
+          "modified_epoch": 1783190520,
+          "sha256": "bfd0a3c7a1a0a669cc265a85f9f65a183ed7c5f19e2bf08ace385235843d399a"
+        },
+        {
+          "kind": "content_match",
+          "matched": true,
+          "text": "Limitations:"
+        }
+      ],
+      "limitations": []
+    },
+    {
+      "id": "module_exists",
+      "name": "manifest_stats module exists",
+      "category": "file",
+      "status": "pass",
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "/Users/kknkama/Documents/openklaw/ai_control_layer/nkama_run_reverse_bridge/ai_output/manifest_stats.py",
+          "size_bytes": 1626,
+          "modified_epoch": 1783190493,
+          "sha256": "1b672200ff6cfa3d07e1726153b2c653bfd841e817b6fa50b05da11c3c16ceb2"
+        }
+      ],
+      "limitations": []
+    },
+    {
+      "id": "tests_exist",
+      "name": "unit tests exist",
+      "category": "file",
+      "status": "pass",
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "/Users/kknkama/Documents/openklaw/ai_control_layer/nkama_run_reverse_bridge/ai_output/test_manifest_stats.py",
+          "size_bytes": 1805,
+          "modified_epoch": 1783190499,
+          "sha256": "d441d09942513c5fb21787e8c11f4b9ac25eb6c1247d0f85b139acaf4be43a65"
+        }
+      ],
+      "limitations": []
+    },
+    {
+      "id": "unit_tests_pass",
+      "name": "5 unit tests pass",
+      "category": "terminal",
+      "status": "pass",
+      "evidence": [
+        {
+          "kind": "subprocess",
+          "command": [
+            "python3",
+            "-m",
+            "unittest",
+            "discover",
+            "-s",
+            "/Users/kknkama/Documents/openklaw/ai_control_layer/nkama_run_reverse_bridge/ai_output"
+          ],
+          "cwd": "/Users/kknkama/Documents/openklaw/ai_control_layer/nkama_run_reverse_bridge/ai_output",
+          "exit_code": 0,
+          "stdout_excerpt": "",
+          "stderr_excerpt": ".....\n----------------------------------------------------------------------\nRan 5 tests in 0.001s\n\nOK"
+        }
+      ],
+      "limitations": []
+    },
+    {
+      "id": "tool_runs_on_own_manifest",
+      "name": "tool summarizes its own manifest (dogfood)",
+      "category": "terminal",
+      "status": "pass",
+      "evidence": [
+        {
+          "kind": "subprocess",
+          "command": [
+            "python3",
+            "/Users/kknkama/Documents/openklaw/ai_control_layer/nkama_run_reverse_bridge/ai_output/manifest_stats.py",
+            "/Users/kknkama/Documents/openklaw/ai_control_layer/nkama_run_reverse_bridge/ai_output/evidence_manifest.json"
+          ],
+          "cwd": "/Users/kknkama/Documents/openklaw/ai_control_layer/nkama_run_reverse_bridge/ai_output",
+          "exit_code": 0,
+          "stdout_excerpt": "{\n  \"checks_total\": 7,\n  \"by_type\": {\n    \"file_exists\": 3,\n    \"file_contains\": 2,\n    \"command_exit_zero\": 2\n  },\n  \"strongest_tier\": \"command\",\n  \"command_checks_allowed\": true\n}",
+          "stderr_excerpt": ""
+        }
+      ],
+      "limitations": []
+    }
+  ]
+}

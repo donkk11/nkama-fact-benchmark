@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "allowed_command_prefixes": [],
+  "checks": [
+    {
+      "id": "answer_file_exists",
+      "name": "Answer file exists",
+      "path": "ANSWER.md",
+      "type": "file_exists"
+    },
+    {
+      "id": "answer_mentions_evidence",
+      "name": "Answer mentions evidence",
+      "path": "ANSWER.md",
+      "type": "file_contains",
+      "text": "Evidence:"
+    },
+    {
+      "id": "answer_mentions_limitations",
+      "name": "Answer mentions limitations",
+      "path": "ANSWER.md",
+      "type": "file_contains",
+      "text": "Limitations:"
+    },
+    {
+      "id": "phase1_exists",
+      "name": "Phase 1 checklist exists",
+      "path": "PHASE1_LAUNCH_CHECKLIST.md",
+      "type": "file_exists"
+    },
+    {
+      "id": "phase1_has_smoke_test",
+      "name": "Phase 1 includes smoke test section",
+      "path": "PHASE1_LAUNCH_CHECKLIST.md",
+      "type": "file_contains",
+      "text": "Functional smoke test"
+    },
+    {
+      "id": "phase2_exists",
+      "name": "Phase 2 workflow exists",
+      "path": "PHASE2_FABLE_CODEX_WORKFLOW.md",
+      "type": "file_exists"
+    },
+    {
+      "id": "phase2_reviewer_rule",
+      "name": "Phase 2 defines reviewer independence",
+      "path": "PHASE2_FABLE_CODEX_WORKFLOW.md",
+      "type": "file_contains",
+      "text": "Reviewer must not fix the work"
+    },
+    {
+      "id": "phase3_exists",
+      "name": "Phase 3 publishing fix exists",
+      "path": "PHASE3_TRUSTED_PUBLISHING_0.1.23.md",
+      "type": "file_exists"
+    },
+    {
+      "id": "phase3_targets_0123",
+      "name": "Phase 3 targets version 0.1.23",
+      "path": "PHASE3_TRUSTED_PUBLISHING_0.1.23.md",
+      "type": "file_contains",
+      "text": "0.1.23"
+    },
+    {
+      "id": "phase3_oidc_permission",
+      "name": "Phase 3 includes OIDC id-token permission",
+      "path": "PHASE3_TRUSTED_PUBLISHING_0.1.23.md",
+      "type": "file_contains",
+      "text": "id-token: write"
+    }
+  ]
+}

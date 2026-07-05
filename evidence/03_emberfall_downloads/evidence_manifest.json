@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "allowed_command_prefixes": [["node"]],
+  "checks": [
+    {
+      "id": "answer_file_exists",
+      "name": "Answer file exists",
+      "type": "file_exists",
+      "path": "ANSWER.md"
+    },
+    {
+      "id": "answer_mentions_evidence",
+      "name": "Answer mentions evidence",
+      "type": "file_contains",
+      "path": "ANSWER.md",
+      "text": "Evidence:"
+    },
+    {
+      "id": "answer_mentions_limitations",
+      "name": "Answer mentions limitations",
+      "type": "file_contains",
+      "path": "ANSWER.md",
+      "text": "Limitations:"
+    },
+    {
+      "id": "generator_embedded_in_core",
+      "name": "game_core.js contains the deterministic stage generator (live probe)",
+      "type": "command_exit_zero",
+      "command": ["node", "-e", "process.exit(require('fs').readFileSync('/Users/kknkama/Downloads/original_platformer_game/game_core.js','utf8').includes('generateExtraStages') ? 0 : 1)"],
+      "timeout_seconds": 30
+    },
+    {
+      "id": "stage_count_75_live",
+      "name": "Live engine reports exactly 75 stages",
+      "type": "command_exit_zero",
+      "command": ["node", "-e", "process.exit(require('/Users/kknkama/Downloads/original_platformer_game/game_core.js').STAGE_DATA.length === 75 ? 0 : 1)"],
+      "timeout_seconds": 30
+    },
+    {
+      "id": "core_game_tests_pass",
+      "name": "Original game-core test suite passes with 75 stages",
+      "type": "command_exit_zero",
+      "command": ["node", "/Users/kknkama/Downloads/original_platformer_game/test_game_core.js"],
+      "timeout_seconds": 120
+    },
+    {
+      "id": "stage_verification_passes",
+      "name": "75 stages verified: uniqueness, well-formed, completable (door + all crystals), simulation, determinism",
+      "type": "command_exit_zero",
+      "command": ["node", "/Users/kknkama/Downloads/original_platformer_game/test_stage_verification.js"],
+      "timeout_seconds": 120
+    }
+  ]
+}

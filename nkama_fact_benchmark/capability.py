@@ -417,6 +417,7 @@ def _status_counts(checks: list[dict[str, Any]]) -> dict[str, Any]:
         "blocked": sum(1 for item in checks if item["status"] == "blocked"),
     }
     summary["passed_all_unblocked"] = summary["fail"] == 0
+    summary["clean_pass"] = summary["fail"] == 0 and summary["blocked"] == 0
     return summary
 
 

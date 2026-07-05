@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "provider": "claude",
+  "model": "claude-fable-5",
+  "model_call": "run",
+  "command": [
+    "claude",
+    "--print",
+    "--model",
+    "claude-fable-5",
+    "--no-session-persistence",
+    "--output-format",
+    "json",
+    "--tools",
+    "Read,Edit,Bash",
+    "--allowedTools",
+    "Read",
+    "Edit",
+    "Bash(uvx *)",
+    "Bash(python3 *)",
+    "--add-dir",
+    "/private/tmp/nkama_fable5_roadmap_v2",
+    "--permission-mode",
+    "default",
+    "--max-budget-usd",
+    "4.00",
+    "<prompt omitted>"
+  ],
+  "exit_code": 0,
+  "timeout_seconds": 300,
+  "tool_policy": {
+    "tool_mode": "claude_scoped_tools",
+    "allowed_directories": [
+      "/private/tmp/nkama_fable5_roadmap_v2"
+    ],
+    "allowed_commands": [
+      "uvx *",
+      "python3 *"
+    ],
+    "allowed_external_model": true,
+    "allowed_browser_mcp_tools": "none",
+    "budget_cap": "4.00",
+    "claude_tools": "Read,Edit,Bash",
+    "claude_allowed_tools": [
+      "Read",
+      "Edit",
+      "Bash(uvx *)",
+      "Bash(python3 *)"
+    ],
+    "permission_mode": "default"
+  },
+  "provider_metadata": {
+    "kind": "claude_json",
+    "type": "result",
+    "subtype": "success",
+    "is_error": false,
+    "total_cost_usd": 1.421627,
+    "stop_reason": "end_turn"
+  },
+  "answer_contract": {
+    "accepted": true,
+    "required_provider_sections": [
+      "Answer:",
+      "Evidence:",
+      "Limitations:"
+    ],
+    "final_report_sections": [
+      "Answer:",
+      "Evidence:",
+      "Limitations:",
+      "Files changed or created:",
+      "Tests or checks run:"
+    ],
+    "missing_sections": [],
+    "tool_request_detected": false,
+    "permission_request_detected": false,
+    "limitations": []
+  },
+  "stdout_excerpt": "{\"type\":\"result\",\"subtype\":\"success\",\"is_error\":false,\"api_error_status\":null,\"duration_ms\":139622,\"duration_api_ms\":139386,\"ttft_ms\":8200,\"ttft_stream_ms\":3279,\"time_to_request_ms\":20,\"num_turns\":8,\"result\":\"Answer:\\nThe roadmap execution package is complete in `/private/tmp/nkama_fable5_roadmap_v2/ai_output/`, with all 10 manifest checks passing:\\n\\n1. **PHASE1_LAUNCH_CHECKLIST.md** \u2014 launch checklist for the current 0.1.22 release, covering release hygiene (tag/PyPI version match, truthful changelog, donkk11 URLs), a clean-venv functional smoke test (including a negative test that the verifier fails on a broken check, and that command checks stay blocked without `--allow-commands`), launch comms, and explicit exit criteria.\\n2. **PHASE2_FABLE_CODEX_WORKFLOW.md** \u2014 a dual-agent workflow where Fable 5 builds and Codex independently reviews under the same Tool Permission Contract: the reviewer gets only the workspace path, re-runs the verifier, grades claims CONFIRMED/CONTRADICTED/UNVERIFIED in `REVIEW.md`, and a run passes only when the verifier passes with zero contradicted claims.\\n3. **PHASE3_TRUSTED_PUBLISHING_0.1.23.md** \u2014 steps to ship 0.1.23 via PyPI Trusted Publishing (...",
+  "stderr_excerpt": "",
+  "answer": "/private/tmp/nkama_fable5_roadmap_v2/ai_output/ANSWER.md",
+  "evidence_manifest": "/private/tmp/nkama_fable5_roadmap_v2/ai_output/evidence_manifest.json",
+  "evidence_summary": {
+    "checks_run": 10,
+    "pass": 10,
+    "fail": 0,
+    "blocked": 0,
+    "passed_all_unblocked": true
+  },
+  "limitations": []
+}

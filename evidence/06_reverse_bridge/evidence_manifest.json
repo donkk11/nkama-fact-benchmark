@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "allowed_command_prefixes": [["python3"]],
+  "checks": [
+    { "id": "answer_file_exists", "name": "Answer file exists", "type": "file_exists", "path": "ANSWER.md" },
+    { "id": "answer_mentions_evidence", "name": "Answer mentions evidence", "type": "file_contains", "path": "ANSWER.md", "text": "Evidence:" },
+    { "id": "answer_mentions_limitations", "name": "Answer mentions limitations", "type": "file_contains", "path": "ANSWER.md", "text": "Limitations:" },
+    { "id": "module_exists", "name": "manifest_stats module exists", "type": "file_exists", "path": "manifest_stats.py" },
+    { "id": "tests_exist", "name": "unit tests exist", "type": "file_exists", "path": "test_manifest_stats.py" },
+    { "id": "unit_tests_pass", "name": "5 unit tests pass", "type": "command_exit_zero", "command": ["python3", "-m", "unittest", "discover", "-s", "/Users/kknkama/Documents/openklaw/ai_control_layer/nkama_run_reverse_bridge/ai_output"], "timeout_seconds": 60 },
+    { "id": "tool_runs_on_own_manifest", "name": "tool summarizes its own manifest (dogfood)", "type": "command_exit_zero", "command": ["python3", "/Users/kknkama/Documents/openklaw/ai_control_layer/nkama_run_reverse_bridge/ai_output/manifest_stats.py", "/Users/kknkama/Documents/openklaw/ai_control_layer/nkama_run_reverse_bridge/ai_output/evidence_manifest.json"], "timeout_seconds": 30 }
+  ]
+}

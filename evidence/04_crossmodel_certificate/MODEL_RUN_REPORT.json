@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "provider": "claude",
+  "model": "claude-sonnet-4-6",
+  "model_call": "run",
+  "command": [
+    "claude",
+    "--print",
+    "--model",
+    "claude-sonnet-4-6",
+    "--no-session-persistence",
+    "--output-format",
+    "json",
+    "--tools",
+    "",
+    "--max-budget-usd",
+    "0.75",
+    "<prompt omitted>"
+  ],
+  "exit_code": 0,
+  "timeout_seconds": 120,
+  "tool_policy": {
+    "tool_mode": "text_only",
+    "allowed_directories": [],
+    "allowed_commands": [],
+    "allowed_external_model": true,
+    "allowed_browser_mcp_tools": "none",
+    "budget_cap": "0.75",
+    "claude_tools": "",
+    "claude_allowed_tools": [],
+    "permission_mode": null
+  },
+  "provider_metadata": {
+    "kind": "claude_json",
+    "type": "result",
+    "subtype": "success",
+    "is_error": false,
+    "total_cost_usd": 0.0348631,
+    "stop_reason": "end_turn"
+  },
+  "answer_contract": {
+    "accepted": true,
+    "required_provider_sections": [
+      "Answer:",
+      "Evidence:",
+      "Limitations:"
+    ],
+    "final_report_sections": [
+      "Answer:",
+      "Evidence:",
+      "Limitations:",
+      "Files changed or created:",
+      "Tests or checks run:"
+    ],
+    "missing_sections": [],
+    "tool_request_detected": false,
+    "permission_request_detected": true,
+    "limitations": []
+  },
+  "stdout_excerpt": "{\"type\":\"result\",\"subtype\":\"success\",\"is_error\":false,\"api_error_status\":null,\"duration_ms\":23221,\"duration_api_ms\":24498,\"ttft_ms\":2630,\"ttft_stream_ms\":1404,\"time_to_request_ms\":16,\"num_turns\":1,\"result\":\"Answer:\\n\\n## Certificate of Discovery\\n\\n---\\n\\n**NKAMA FACT BENCHMARK**\\n*Evidence-Gated Achievement Record*\\n\\n---\\n\\n# Certificate of Verified Discovery\\n\\n**Awarded to:**\\n**KK Nkama** and **OpenAI Codex**\\n\\n**Date of Record:** 4 July 2026\\n\\n**Achievement:**\\n*Discovery and Successful Testing of the Evidence-Gated Codex-to-Claude Sidecar Workflow*\\n\\n---\\n\\nThis certificate recognizes that KK Nkama, owner and architect of the Nkama Fact Benchmark system, in collaboration with OpenAI Codex as an autonomous agent, successfully designed, executed, and validated a novel **Codex-to-Claude sidecar workflow** operating under the Nkama evidence-gating protocol.\\n\\n### What Was Accomplished\\n\\n- Codex was invoked as a primary agent under the Nkama Fact Benchmark protocol\\n- Claude served as a **sidecar** \u2014 a secondary agent called within the same evidence-gated run\\n- The workflow demonstrated that two distinct AI systems (Codex + Claude) can operate within a single verifiable...",
+  "stderr_excerpt": "",
+  "answer": "/private/tmp/nkama_claude_certificate/ai_output/ANSWER.md",
+  "evidence_manifest": "/private/tmp/nkama_claude_certificate/ai_output/evidence_manifest.json",
+  "evidence_summary": {
+    "checks_run": 3,
+    "pass": 3,
+    "fail": 0,
+    "blocked": 0,
+    "passed_all_unblocked": true
+  },
+  "limitations": []
+}

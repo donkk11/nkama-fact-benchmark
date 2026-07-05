@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "allowed_command_prefixes": [],
+  "checks": [
+    {
+      "id": "answer_file_exists",
+      "name": "Answer file exists",
+      "type": "file_exists",
+      "path": "ANSWER.md"
+    },
+    {
+      "id": "answer_mentions_evidence",
+      "name": "Answer mentions evidence",
+      "type": "file_contains",
+      "path": "ANSWER.md",
+      "text": "Evidence:"
+    },
+    {
+      "id": "answer_mentions_limitations",
+      "name": "Answer mentions limitations",
+      "type": "file_contains",
+      "path": "ANSWER.md",
+      "text": "Limitations:"
+    }
+  ],
+  "_instructions": [
+    "This is a starter manifest. Replace or extend these checks to match the files the AI actually generated.",
+    "Command checks are blocked by default and require nkama-evidence-layer --allow-commands plus explicit allowed_command_prefixes.",
+    "Do not edit a blocked or failed report into a pass. Fix the evidence or keep the limitation visible."
+  ]
+}

@@ -1,0 +1,178 @@
+{
+  "schema_version": 1,
+  "run_id": "evidence_20260705T165903_cfc8cb88",
+  "generated_at": "2026-07-05T16:59:03.426191+00:00",
+  "manifest": "/Users/kknkama/Documents/openklaw/ai_control_layer/nkama_run_emberfall_70_stages/ai_output/evidence_manifest.json",
+  "principle": "fact_verified_only",
+  "summary": {
+    "checks_run": 8,
+    "pass": 8,
+    "fail": 0,
+    "blocked": 0,
+    "passed_all_unblocked": true,
+    "clean_pass": true
+  },
+  "checks": [
+    {
+      "id": "answer_file_exists",
+      "name": "Answer file exists",
+      "category": "file",
+      "status": "pass",
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "/Users/kknkama/Documents/openklaw/ai_control_layer/nkama_run_emberfall_70_stages/ai_output/ANSWER.md",
+          "size_bytes": 4318,
+          "modified_epoch": 1783040601,
+          "sha256": "8e553871cf48bc841a955c14df8686b5c038c6b8ca84f3e8dbf86d1122f640e4"
+        }
+      ],
+      "limitations": []
+    },
+    {
+      "id": "answer_mentions_evidence",
+      "name": "Answer mentions evidence",
+      "category": "file",
+      "status": "pass",
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "/Users/kknkama/Documents/openklaw/ai_control_layer/nkama_run_emberfall_70_stages/ai_output/ANSWER.md",
+          "size_bytes": 4318,
+          "modified_epoch": 1783040601,
+          "sha256": "8e553871cf48bc841a955c14df8686b5c038c6b8ca84f3e8dbf86d1122f640e4"
+        },
+        {
+          "kind": "content_match",
+          "matched": true,
+          "text": "Evidence:"
+        }
+      ],
+      "limitations": []
+    },
+    {
+      "id": "answer_mentions_limitations",
+      "name": "Answer mentions limitations",
+      "category": "file",
+      "status": "pass",
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "/Users/kknkama/Documents/openklaw/ai_control_layer/nkama_run_emberfall_70_stages/ai_output/ANSWER.md",
+          "size_bytes": 4318,
+          "modified_epoch": 1783040601,
+          "sha256": "8e553871cf48bc841a955c14df8686b5c038c6b8ca84f3e8dbf86d1122f640e4"
+        },
+        {
+          "kind": "content_match",
+          "matched": true,
+          "text": "Limitations:"
+        }
+      ],
+      "limitations": []
+    },
+    {
+      "id": "stage_generator_exists",
+      "name": "Stage generator module exists (live file probe)",
+      "category": "terminal",
+      "status": "pass",
+      "evidence": [
+        {
+          "kind": "subprocess",
+          "command": [
+            "node",
+            "-e",
+            "process.exit(require('fs').existsSync('/Users/kknkama/Documents/openklaw/ai_control_layer/tesxting chatgpt/emberfall_courier/src/stageGen.js') ? 0 : 1)"
+          ],
+          "cwd": "/Users/kknkama/Documents/openklaw/ai_control_layer/nkama_run_emberfall_70_stages/ai_output",
+          "exit_code": 0,
+          "stdout_excerpt": "",
+          "stderr_excerpt": ""
+        }
+      ],
+      "limitations": []
+    },
+    {
+      "id": "game_core_uses_generator",
+      "name": "gameCore.js imports and appends the generated stages (live file probe)",
+      "category": "terminal",
+      "status": "pass",
+      "evidence": [
+        {
+          "kind": "subprocess",
+          "command": [
+            "node",
+            "-e",
+            "process.exit(require('fs').readFileSync('/Users/kknkama/Documents/openklaw/ai_control_layer/tesxting chatgpt/emberfall_courier/src/gameCore.js','utf8').includes('generateExtraStageDefs') ? 0 : 1)"
+          ],
+          "cwd": "/Users/kknkama/Documents/openklaw/ai_control_layer/nkama_run_emberfall_70_stages/ai_output",
+          "exit_code": 0,
+          "stdout_excerpt": "",
+          "stderr_excerpt": ""
+        }
+      ],
+      "limitations": []
+    },
+    {
+      "id": "verification_tests_exist",
+      "name": "Stage verification test file exists (live file probe)",
+      "category": "terminal",
+      "status": "pass",
+      "evidence": [
+        {
+          "kind": "subprocess",
+          "command": [
+            "node",
+            "-e",
+            "process.exit(require('fs').existsSync('/Users/kknkama/Documents/openklaw/ai_control_layer/tesxting chatgpt/emberfall_courier/tests/verify_stages.mjs') ? 0 : 1)"
+          ],
+          "cwd": "/Users/kknkama/Documents/openklaw/ai_control_layer/nkama_run_emberfall_70_stages/ai_output",
+          "exit_code": 0,
+          "stdout_excerpt": "",
+          "stderr_excerpt": ""
+        }
+      ],
+      "limitations": []
+    },
+    {
+      "id": "core_game_tests_pass",
+      "name": "Original game-core test suite passes with 73 stages",
+      "category": "terminal",
+      "status": "pass",
+      "evidence": [
+        {
+          "kind": "subprocess",
+          "command": [
+            "node",
+            "/Users/kknkama/Documents/openklaw/ai_control_layer/tesxting chatgpt/emberfall_courier/tests/gameCore.test.js"
+          ],
+          "cwd": "/Users/kknkama/Documents/openklaw/ai_control_layer/nkama_run_emberfall_70_stages/ai_output",
+          "exit_code": 0,
+          "stdout_excerpt": "\u2713 every stage has collectibles, hazards, enemies, and an exit\n\u2713 collecting a coin increases score and marks it collected\n\u2713 collecting a gem awards the larger gem value\n\u2713 stomping a patrol enemy defeats it and gives a score bonus\n\u2713 touching a hazard costs one life and respawns at checkpoint\n\u2713 spitter enemies create projectiles on their cooldown\n\u2713 reaching a stage exit clears the level and keeps score for next stage\n\u2713 clearing the final stage triggers victory state\n\nAll game-core tests passed.",
+          "stderr_excerpt": ""
+        }
+      ],
+      "limitations": []
+    },
+    {
+      "id": "stage_verification_passes",
+      "name": "73 stages verified: count, uniqueness, reachability, simulation, determinism",
+      "category": "terminal",
+      "status": "pass",
+      "evidence": [
+        {
+          "kind": "subprocess",
+          "command": [
+            "node",
+            "/Users/kknkama/Documents/openklaw/ai_control_layer/tesxting chatgpt/emberfall_courier/tests/verify_stages.mjs"
+          ],
+          "cwd": "/Users/kknkama/Documents/openklaw/ai_control_layer/nkama_run_emberfall_70_stages/ai_output",
+          "exit_code": 0,
+          "stdout_excerpt": "PASS  stage count is 73 (found 73)\nPASS  all 73 stage names unique (73 distinct)\nPASS  all 73 stage layouts unique (73 distinct geometry hashes)\nPASS  spawn\u2192exit path exists in all 73 stages \u2014 BFS over stand surfaces with engine jump limits\nPASS  all 73 stages simulate 1200 frames without errors and with forward progress\nPASS  generator is deterministic (two runs byte-identical) \u2014 d21a7bb3584da5a3\u2026\n\nALL CHECKS PASSED",
+          "stderr_excerpt": ""
+        }
+      ],
+      "limitations": []
+    }
+  ]
+}

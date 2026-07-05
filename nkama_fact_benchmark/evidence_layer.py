@@ -182,6 +182,7 @@ def verify_manifest(manifest_path: str | Path, *, allow_commands: bool = False) 
         "checks": rows,
     }
     report["summary"]["passed_all_unblocked"] = report["summary"]["fail"] == 0
+    report["summary"]["clean_pass"] = report["summary"]["fail"] == 0 and report["summary"]["blocked"] == 0
     return report
 
 

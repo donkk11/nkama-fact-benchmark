@@ -1,0 +1,157 @@
+{
+  "schema_version": 1,
+  "run_id": "evidence_20260705T165904_edb7f907",
+  "generated_at": "2026-07-05T16:59:04.534733+00:00",
+  "manifest": "/Users/kknkama/Documents/openklaw/ai_control_layer/nkama_run_emberfall_downloads_70_stages/ai_output/evidence_manifest.json",
+  "principle": "fact_verified_only",
+  "summary": {
+    "checks_run": 7,
+    "pass": 7,
+    "fail": 0,
+    "blocked": 0,
+    "passed_all_unblocked": true,
+    "clean_pass": true
+  },
+  "checks": [
+    {
+      "id": "answer_file_exists",
+      "name": "Answer file exists",
+      "category": "file",
+      "status": "pass",
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "/Users/kknkama/Documents/openklaw/ai_control_layer/nkama_run_emberfall_downloads_70_stages/ai_output/ANSWER.md",
+          "size_bytes": 4121,
+          "modified_epoch": 1783060356,
+          "sha256": "df10e13be6361cb68ff691a5c31cd6b75af7498ac8db448e990c9664bf7634ed"
+        }
+      ],
+      "limitations": []
+    },
+    {
+      "id": "answer_mentions_evidence",
+      "name": "Answer mentions evidence",
+      "category": "file",
+      "status": "pass",
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "/Users/kknkama/Documents/openklaw/ai_control_layer/nkama_run_emberfall_downloads_70_stages/ai_output/ANSWER.md",
+          "size_bytes": 4121,
+          "modified_epoch": 1783060356,
+          "sha256": "df10e13be6361cb68ff691a5c31cd6b75af7498ac8db448e990c9664bf7634ed"
+        },
+        {
+          "kind": "content_match",
+          "matched": true,
+          "text": "Evidence:"
+        }
+      ],
+      "limitations": []
+    },
+    {
+      "id": "answer_mentions_limitations",
+      "name": "Answer mentions limitations",
+      "category": "file",
+      "status": "pass",
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "/Users/kknkama/Documents/openklaw/ai_control_layer/nkama_run_emberfall_downloads_70_stages/ai_output/ANSWER.md",
+          "size_bytes": 4121,
+          "modified_epoch": 1783060356,
+          "sha256": "df10e13be6361cb68ff691a5c31cd6b75af7498ac8db448e990c9664bf7634ed"
+        },
+        {
+          "kind": "content_match",
+          "matched": true,
+          "text": "Limitations:"
+        }
+      ],
+      "limitations": []
+    },
+    {
+      "id": "generator_embedded_in_core",
+      "name": "game_core.js contains the deterministic stage generator (live probe)",
+      "category": "terminal",
+      "status": "pass",
+      "evidence": [
+        {
+          "kind": "subprocess",
+          "command": [
+            "node",
+            "-e",
+            "process.exit(require('fs').readFileSync('/Users/kknkama/Downloads/original_platformer_game/game_core.js','utf8').includes('generateExtraStages') ? 0 : 1)"
+          ],
+          "cwd": "/Users/kknkama/Documents/openklaw/ai_control_layer/nkama_run_emberfall_downloads_70_stages/ai_output",
+          "exit_code": 0,
+          "stdout_excerpt": "",
+          "stderr_excerpt": ""
+        }
+      ],
+      "limitations": []
+    },
+    {
+      "id": "stage_count_75_live",
+      "name": "Live engine reports exactly 75 stages",
+      "category": "terminal",
+      "status": "pass",
+      "evidence": [
+        {
+          "kind": "subprocess",
+          "command": [
+            "node",
+            "-e",
+            "process.exit(require('/Users/kknkama/Downloads/original_platformer_game/game_core.js').STAGE_DATA.length === 75 ? 0 : 1)"
+          ],
+          "cwd": "/Users/kknkama/Documents/openklaw/ai_control_layer/nkama_run_emberfall_downloads_70_stages/ai_output",
+          "exit_code": 0,
+          "stdout_excerpt": "",
+          "stderr_excerpt": ""
+        }
+      ],
+      "limitations": []
+    },
+    {
+      "id": "core_game_tests_pass",
+      "name": "Original game-core test suite passes with 75 stages",
+      "category": "terminal",
+      "status": "pass",
+      "evidence": [
+        {
+          "kind": "subprocess",
+          "command": [
+            "node",
+            "/Users/kknkama/Downloads/original_platformer_game/test_game_core.js"
+          ],
+          "cwd": "/Users/kknkama/Documents/openklaw/ai_control_layer/nkama_run_emberfall_downloads_70_stages/ai_output",
+          "exit_code": 0,
+          "stdout_excerpt": "PASS all five stages parse with player spawn, door, platforms, enemies, and crystals\nPASS player obeys gravity, lands on solid ground, and can move right\nPASS jumpPressed gives upward velocity and double jump increments jump counter\nPASS collecting a crystal increases score and collection stats\nPASS lantern attack defeats an enemy and awards score\nPASS touching hazards costs a life and respawns at checkpoint\nPASS door blocks progress until every crystal is collected\nPASS clearing a stage carries score and advances to the next stage\nPASS projectiles spawn from turrets and can damage player\nPASS serialised state exposes stable HUD/game data",
+          "stderr_excerpt": ""
+        }
+      ],
+      "limitations": []
+    },
+    {
+      "id": "stage_verification_passes",
+      "name": "75 stages verified: uniqueness, well-formed, completable (door + all crystals), simulation, determinism",
+      "category": "terminal",
+      "status": "pass",
+      "evidence": [
+        {
+          "kind": "subprocess",
+          "command": [
+            "node",
+            "/Users/kknkama/Downloads/original_platformer_game/test_stage_verification.js"
+          ],
+          "cwd": "/Users/kknkama/Documents/openklaw/ai_control_layer/nkama_run_emberfall_downloads_70_stages/ai_output",
+          "exit_code": 0,
+          "stdout_excerpt": "PASS  stage count is 75 (found 75)\nPASS  all 75 stage names unique (75 distinct)\nPASS  all 75 stage maps unique (75 distinct SHA-256 hashes)\nPASS  all maps well-formed (one P, one D, enough crystals; uniform rows for generated)\nPASS  all 75 stages completable: door and every crystal reachable \u2014 BFS with double-jump physics\nPASS  all 75 stages simulate 900 frames without exceptions\nPASS  generator is deterministic (two runs byte-identical) \u2014 f9dc5f556bb41750\u2026\n\nALL STAGE CHECKS PASSED",
+          "stderr_excerpt": ""
+        }
+      ],
+      "limitations": []
+    }
+  ]
+}

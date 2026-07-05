@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.1.26 — 2026-07-05
+
+- Fixed the reviewed naming/implementation mismatch: summaries now include an
+  unambiguous `clean_pass` field (`fail == 0 AND blocked == 0`) alongside
+  `passed_all_unblocked` (which keeps its literal meaning: no failures among
+  non-blocked checks). Reported in external deep-research review.
+- Published `evidence/`: raw logs, manifests, provider run reports, and
+  freshly regenerated verification reports for all six README field results,
+  answering the review finding that claims lacked published raw evidence.
+- Added a standing invitation for third-party replications
+  (`evidence/replications/`), including failed ones.
+
+## 0.1.26 — unreleased
+
+- Added `pilot-harness` for publication-style Nkama research design:
+  Phase A 3-task SWE-bench Verified smoke test, Phase B 20-task pilot,
+  Phase C 100-task publication run, and Phase D FEVER/TruthfulQA
+  negative-control report.
+- The harness creates fixed condition folders (`baseline_plain`,
+  `decomposition_only`, `nkama_protocol`), task slots, condition protocols,
+  result schemas, preflight reports, and a starter evidence manifest.
+- SWE-bench execution is honestly marked blocked when local prerequisites such
+  as Docker or official dataset instance IDs are unavailable.
+
 ## 0.1.25 — 2026-07-05
 
 - Public maintainer contact now lives in SECURITY.md (repository level),

@@ -1,0 +1,207 @@
+{
+  "schema_version": 1,
+  "run_id": "evidence_20260705T165904_af3560cd",
+  "generated_at": "2026-07-05T16:59:04.538497+00:00",
+  "manifest": "/Users/kknkama/Documents/openklaw/ai_control_layer/nkama_run_fable5_roadmap/ai_output/evidence_manifest.json",
+  "principle": "fact_verified_only",
+  "summary": {
+    "checks_run": 10,
+    "pass": 10,
+    "fail": 0,
+    "blocked": 0,
+    "passed_all_unblocked": true,
+    "clean_pass": true
+  },
+  "checks": [
+    {
+      "id": "answer_file_exists",
+      "name": "Answer file exists",
+      "category": "file",
+      "status": "pass",
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "/Users/kknkama/Documents/openklaw/ai_control_layer/nkama_run_fable5_roadmap/ai_output/ANSWER.md",
+          "size_bytes": 4289,
+          "modified_epoch": 1783179926,
+          "sha256": "7180f3f20b8beb3bc868a2e5cfce6f9e564e3986b5afccf5d4bd1fee2246aea4"
+        }
+      ],
+      "limitations": []
+    },
+    {
+      "id": "answer_mentions_evidence",
+      "name": "Answer mentions evidence",
+      "category": "file",
+      "status": "pass",
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "/Users/kknkama/Documents/openklaw/ai_control_layer/nkama_run_fable5_roadmap/ai_output/ANSWER.md",
+          "size_bytes": 4289,
+          "modified_epoch": 1783179926,
+          "sha256": "7180f3f20b8beb3bc868a2e5cfce6f9e564e3986b5afccf5d4bd1fee2246aea4"
+        },
+        {
+          "kind": "content_match",
+          "matched": true,
+          "text": "Evidence:"
+        }
+      ],
+      "limitations": []
+    },
+    {
+      "id": "answer_mentions_limitations",
+      "name": "Answer mentions limitations",
+      "category": "file",
+      "status": "pass",
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "/Users/kknkama/Documents/openklaw/ai_control_layer/nkama_run_fable5_roadmap/ai_output/ANSWER.md",
+          "size_bytes": 4289,
+          "modified_epoch": 1783179926,
+          "sha256": "7180f3f20b8beb3bc868a2e5cfce6f9e564e3986b5afccf5d4bd1fee2246aea4"
+        },
+        {
+          "kind": "content_match",
+          "matched": true,
+          "text": "Limitations:"
+        }
+      ],
+      "limitations": []
+    },
+    {
+      "id": "phase1_exists",
+      "name": "Phase 1 checklist exists",
+      "category": "file",
+      "status": "pass",
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "/Users/kknkama/Documents/openklaw/ai_control_layer/nkama_run_fable5_roadmap/ai_output/PHASE1_LAUNCH_CHECKLIST.md",
+          "size_bytes": 1220,
+          "modified_epoch": 1783179926,
+          "sha256": "eb074c7fc7cef71e435b0f26c9adcb943c6f86c8a1837d13ede1a3d5956eb5f3"
+        }
+      ],
+      "limitations": []
+    },
+    {
+      "id": "phase1_has_smoke_test",
+      "name": "Phase 1 includes smoke test section",
+      "category": "file",
+      "status": "pass",
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "/Users/kknkama/Documents/openklaw/ai_control_layer/nkama_run_fable5_roadmap/ai_output/PHASE1_LAUNCH_CHECKLIST.md",
+          "size_bytes": 1220,
+          "modified_epoch": 1783179926,
+          "sha256": "eb074c7fc7cef71e435b0f26c9adcb943c6f86c8a1837d13ede1a3d5956eb5f3"
+        },
+        {
+          "kind": "content_match",
+          "matched": true,
+          "text": "Functional smoke test"
+        }
+      ],
+      "limitations": []
+    },
+    {
+      "id": "phase2_exists",
+      "name": "Phase 2 workflow exists",
+      "category": "file",
+      "status": "pass",
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "/Users/kknkama/Documents/openklaw/ai_control_layer/nkama_run_fable5_roadmap/ai_output/PHASE2_FABLE_CODEX_WORKFLOW.md",
+          "size_bytes": 1442,
+          "modified_epoch": 1783179926,
+          "sha256": "9bd270f833d84e71dc196a9947b556ad2fbb5617bdd135a9ce1f4a27fff2c007"
+        }
+      ],
+      "limitations": []
+    },
+    {
+      "id": "phase2_reviewer_rule",
+      "name": "Phase 2 defines reviewer independence",
+      "category": "file",
+      "status": "pass",
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "/Users/kknkama/Documents/openklaw/ai_control_layer/nkama_run_fable5_roadmap/ai_output/PHASE2_FABLE_CODEX_WORKFLOW.md",
+          "size_bytes": 1442,
+          "modified_epoch": 1783179926,
+          "sha256": "9bd270f833d84e71dc196a9947b556ad2fbb5617bdd135a9ce1f4a27fff2c007"
+        },
+        {
+          "kind": "content_match",
+          "matched": true,
+          "text": "Reviewer must not fix the work"
+        }
+      ],
+      "limitations": []
+    },
+    {
+      "id": "phase3_exists",
+      "name": "Phase 3 publishing fix exists",
+      "category": "file",
+      "status": "pass",
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "/Users/kknkama/Documents/openklaw/ai_control_layer/nkama_run_fable5_roadmap/ai_output/PHASE3_TRUSTED_PUBLISHING_0.1.23.md",
+          "size_bytes": 1634,
+          "modified_epoch": 1783179926,
+          "sha256": "95c5fa755352367bee5f5f4613df3fff327a51dc8d3802a45d5964cd9c9da803"
+        }
+      ],
+      "limitations": []
+    },
+    {
+      "id": "phase3_targets_0123",
+      "name": "Phase 3 targets version 0.1.23",
+      "category": "file",
+      "status": "pass",
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "/Users/kknkama/Documents/openklaw/ai_control_layer/nkama_run_fable5_roadmap/ai_output/PHASE3_TRUSTED_PUBLISHING_0.1.23.md",
+          "size_bytes": 1634,
+          "modified_epoch": 1783179926,
+          "sha256": "95c5fa755352367bee5f5f4613df3fff327a51dc8d3802a45d5964cd9c9da803"
+        },
+        {
+          "kind": "content_match",
+          "matched": true,
+          "text": "0.1.23"
+        }
+      ],
+      "limitations": []
+    },
+    {
+      "id": "phase3_oidc_permission",
+      "name": "Phase 3 includes OIDC id-token permission",
+      "category": "file",
+      "status": "pass",
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "/Users/kknkama/Documents/openklaw/ai_control_layer/nkama_run_fable5_roadmap/ai_output/PHASE3_TRUSTED_PUBLISHING_0.1.23.md",
+          "size_bytes": 1634,
+          "modified_epoch": 1783179926,
+          "sha256": "95c5fa755352367bee5f5f4613df3fff327a51dc8d3802a45d5964cd9c9da803"
+        },
+        {
+          "kind": "content_match",
+          "matched": true,
+          "text": "id-token: write"
+        }
+      ],
+      "limitations": []
+    }
+  ]
+}

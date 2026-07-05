@@ -21,6 +21,7 @@ uvx nkama-fact-benchmark browser-benchmark
 uvx nkama-fact-benchmark capability-test
 uvx nkama-fact-benchmark capability-test --deep
 uvx nkama-fact-benchmark inspect path/to/nkama_run
+uvx nkama-fact-benchmark pilot-harness --phase A
 uvx nkama-fact-benchmark prepare "Build a browser game with tests."
 uvx nkama-fact-benchmark selftest
 uvx nkama-fact-benchmark agent
@@ -65,10 +66,16 @@ wired into the manifest as command checks) verified 8/8 and 7/7 with zero
 blocked evidence — and the physics check caught a real, human-missed
 impossible jump in a handmade level.
 
+Raw logs for every one of those claims — manifests, answers, provider run
+reports, and freshly regenerated verification reports — are published in the
+repository's `evidence/` folder. They are maintainer-hosted evidence, not
+third-party replication; independent replications are invited via
+`evidence/README.md` and get listed.
+
 For CI or any reproducible workflow, pin the version:
 
 ```bash
-uvx --from 'nkama-fact-benchmark==0.1.24' nkama-fact-benchmark selftest
+uvx --from 'nkama-fact-benchmark==0.1.25' nkama-fact-benchmark selftest
 ```
 
 Before publishing or sharing a built package, audit the release files:
@@ -176,6 +183,35 @@ uvx nkama-fact-benchmark inspect path/to/nkama_run
 ```
 
 `inspect` classifies the folder as values such as `design_only`, `working_document`, `working_code_unverified`, `verified_build`, `fake_evidence`, `incomplete`, `failed_evidence`, or `blocked`. This is useful when an AI creates a folder full of Markdown and JSON and you need to know whether it is only a design, a working artifact, or a verified build.
+
+## Research Pilot Harness
+
+Use `pilot-harness` when you want to prepare a publication-style experiment
+instead of a one-off AI task:
+
+```bash
+uvx nkama-fact-benchmark pilot-harness --phase A --output nkama_phase_a_smoke
+```
+
+The phases are:
+
+```text
+Phase A: 3-task SWE-bench Verified smoke test
+Phase B: 20-task SWE-bench Verified pilot
+Phase C: 100-task SWE-bench Verified publication run
+Phase D: FEVER / TruthfulQA negative-control report
+```
+
+The harness writes `EXPERIMENT_PLAN.md`, `run_config.json`,
+`preflight_report.json`, phase folders, three fixed condition protocols
+(`baseline_plain`, `decomposition_only`, `nkama_protocol`), result schemas, and
+`ai_output/evidence_manifest.json`.
+
+It does **not** pretend to run SWE-bench if Docker, official dataset instance
+IDs, or the evaluation harness are missing. In that case the harness is created
+and execution is reported as blocked. That is the point: a publication-grade
+experiment should distinguish `prepared`, `ran`, `passed`, `failed`, and
+`blocked`.
 
 Run the package self-test when you want machine-readable proof that the public package checks are working:
 

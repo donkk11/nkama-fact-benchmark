@@ -9,7 +9,7 @@ description = "Evidence-gated benchmark for testing whether AI assistants can pr
 readme = "README_PYPI.md"
 requires-python = ">=3.9"
 authors = [
-  { name = "KK Nkama", email = "kknkama@gmail.com" }
+  { name = "KK Nkama" }
 ]
 license = "Apache-2.0"
 license-files = ["LICENSE"]

@@ -2,9 +2,12 @@
 
 ## 0.1.25 — 2026-07-05
 
-- Public maintainer email added to package metadata and SECURITY.md, fixing
-  the reviewed documentation inconsistency (SECURITY.md pointed to an email
-  that metadata did not expose).
+- Public maintainer contact now lives in SECURITY.md (repository level),
+  fixing the reviewed inconsistency where SECURITY.md pointed at metadata
+  that exposed no email. Package artifacts intentionally remain email-free:
+  the release security audit's no_private_text rule rejected an attempt to
+  embed the address in package metadata — the gate applies to its own
+  maintainer, and repo-level contact is the compliant path.
 - New `docs/MANIFEST_QUALITY.md`: evidence strength ladder, anti-gaming
   patterns, critic-model semantic checks, weak-vs-strong ablation.
 - New `docs/STANDARD_TASKS.md`: Nkama Standard Tasks v1 (NST-1..5), a frozen

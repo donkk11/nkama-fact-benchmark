@@ -359,6 +359,26 @@ The public profile is designed to be portable:
 
 Private/local profiles can be used for a specific developer's own machine, but those checks are opt-in.
 
+## Known limits, by design and by roadmap
+
+Independent reviews of this project have flagged real limits. The honest map:
+
+- **Scope:** a run proves only the environment it ran in — like every test
+  suite ever written. Run the standard tasks in each environment you care
+  about; never generalize one sandbox's result to another.
+- **Manifest sufficiency:** the verifier proves your checks pass, not that
+  your checks are good. Read `docs/MANIFEST_QUALITY.md` — the strength
+  ladder, anti-gaming patterns, and the weak-vs-strong ablation.
+- **Comparability:** cross-model comparisons need a fixed task surface.
+  Use `docs/STANDARD_TASKS.md` (Nkama Standard Tasks v1, frozen).
+- **Language:** the prompt filter's heuristics are English-first regex
+  scans, so non-English prompts may be under-scored by the *prompt* layer.
+  The *evidence* layer is language-neutral — manifests, commands, and exit
+  codes work identically in any language. Multilingual prompt heuristics
+  are on the roadmap.
+- **Maturity:** alpha, rapid release cadence, small ecosystem. Pin versions
+  in CI and keep run folders as your own ground truth.
+
 ## Status
 
 This package is alpha software. It is useful for evidence-gated AI workflows, prompt testing, and local verification experiments. It is not a guarantee of truth, correctness, safety, legal validity, or production readiness.

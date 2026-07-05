@@ -27,5 +27,5 @@ sufficient or that the machine running them is uncompromised.
 ## Reporting a vulnerability
 
 Open a GitHub issue with the label `security`, or email the author
-(see pyproject.toml). Please include reproduction steps. Do not include
+directly: kknkama@gmail.com. Please include reproduction steps. Do not include
 private data in reports.

@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.1.25 — 2026-07-05
+
+- Public maintainer email added to package metadata and SECURITY.md, fixing
+  the reviewed documentation inconsistency (SECURITY.md pointed to an email
+  that metadata did not expose).
+- New `docs/MANIFEST_QUALITY.md`: evidence strength ladder, anti-gaming
+  patterns, critic-model semantic checks, weak-vs-strong ablation.
+- New `docs/STANDARD_TASKS.md`: Nkama Standard Tasks v1 (NST-1..5), a frozen
+  shared task surface for cross-model comparability.
+- README: "Known limits, by design and by roadmap" section, including the
+  multilingual policy (evidence layer is language-neutral; prompt heuristics
+  are English-first pending roadmap work).
+
 ## 0.1.24 — 2026-07-04
 
 - Trusted Publishing verification release. PyPI now has a GitHub Actions

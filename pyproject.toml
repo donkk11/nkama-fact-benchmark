@@ -4,12 +4,12 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "nkama-fact-benchmark"
-version = "0.1.24"
+version = "0.1.25"
 description = "Evidence-gated benchmark for testing whether AI assistants can prove what they claim."
 readme = "README_PYPI.md"
 requires-python = ">=3.9"
 authors = [
-  { name = "KK Nkama" }
+  { name = "KK Nkama", email = "kknkama@gmail.com" }
 ]
 license = "Apache-2.0"
 license-files = ["LICENSE"]

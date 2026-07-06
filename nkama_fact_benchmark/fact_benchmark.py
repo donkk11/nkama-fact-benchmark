@@ -642,6 +642,21 @@ def build_parser() -> argparse.ArgumentParser:
     agent_run.add_argument("--mode", choices=["strict", "compact"], default="strict")
     agent_run.add_argument("--overwrite", action="store_true")
     agent_run.add_argument("--json", action="store_true", help="Print machine-readable JSON.")
+    bridge = sub.add_parser("bridge", help="Connect two terminal agents: one builds, the other verifies. No MCP needed.")
+    bridge.add_argument("task", nargs="?")
+    bridge.add_argument("--file")
+    bridge.add_argument("--output")
+    bridge.add_argument("--builder", choices=["claude", "codex"], default="claude", help="Which agent builds.")
+    bridge.add_argument("--verifier", choices=["claude", "codex"], default=None, help="Which agent verifies (default: the other one).")
+    bridge.add_argument("--model", default="claude-sonnet-4-6", help="Builder model (claude builder only).")
+    bridge.add_argument("--verifier-model", default="claude-sonnet-4-6", help="Verifier model (claude verifier only).")
+    bridge.add_argument("--max-budget-usd", default="2")
+    bridge.add_argument("--timeout-seconds", type=int, default=300)
+    bridge.add_argument("--allow-external-model", action="store_true")
+    bridge.add_argument("--allow-command", action="append", default=[], help="Allowed command pattern for the builder (default: 'python3 *', 'uvx *').")
+    bridge.add_argument("--title", default="Nkama Bridge Run")
+    bridge.add_argument("--overwrite", action="store_true")
+    bridge.add_argument("--json", action="store_true", help="Print machine-readable JSON.")
     security = sub.add_parser("security-audit", help="Audit release artifacts before publishing.")
     security.add_argument("artifacts", nargs="+")
     return parser
@@ -707,6 +722,11 @@ def main() -> None:
             from .agent import run_model_cli
 
             run_model_cli(args)
+            return
+        if args.subcommand == "bridge":
+            from .bridge import run_cli
+
+            run_cli(args)
             return
         if args.subcommand == "security-audit":
             from .security import audit_artifacts

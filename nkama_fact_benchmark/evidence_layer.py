@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import shlex
 import subprocess
 import uuid
 from dataclasses import dataclass, field
@@ -73,10 +74,32 @@ def _allowed(command: list[str], prefixes: list[list[str]]) -> bool:
     return any(command[: len(prefix)] == prefix for prefix in prefixes if prefix)
 
 
+def _normalize_shell_words(raw: Any, *, label: str) -> tuple[list[str] | None, str | None]:
+    if isinstance(raw, list) and raw and all(isinstance(part, str) for part in raw):
+        return raw, None
+    if isinstance(raw, str) and raw.strip():
+        try:
+            parts = shlex.split(raw)
+        except ValueError as exc:
+            return None, f"{label} could not be parsed safely: {exc}"
+        if parts:
+            return parts, None
+    return None, f"{label} must be a non-empty list of strings or a safely split string."
+
+
 def _prefixes(raw: Any) -> list[list[str]]:
     if not raw:
         return []
-    return [item for item in raw if isinstance(item, list) and all(isinstance(part, str) for part in item)]
+    prefixes: list[list[str]] = []
+    for item in raw:
+        prefix, _error = _normalize_shell_words(item, label="Allowed command prefix")
+        if not prefix:
+            continue
+        if prefix[-1] == "*":
+            prefix = prefix[:-1]
+        if prefix:
+            prefixes.append(prefix)
+    return prefixes
 
 
 def _file_exists(root: Path, check: dict[str, Any]) -> EvidenceResult:
@@ -125,9 +148,9 @@ def _no_forbidden_claims(check: dict[str, Any]) -> EvidenceResult:
 
 
 def _command(root: Path, check: dict[str, Any], *, allow_commands: bool, allowed_prefixes: list[list[str]]) -> EvidenceResult:
-    command = check.get("command", [])
-    if not isinstance(command, list) or not command or not all(isinstance(part, str) for part in command):
-        return EvidenceResult(str(check.get("id", "command")), str(check.get("name", "Command check")), "terminal", "blocked", limitations=["Command must be a non-empty list of strings."])
+    command, command_error = _normalize_shell_words(check.get("command", []), label="Command")
+    if command_error or command is None:
+        return EvidenceResult(str(check.get("id", "command")), str(check.get("name", "Command check")), "terminal", "blocked", limitations=[command_error or "Invalid command."])
     if not allow_commands:
         return EvidenceResult(str(check.get("id", "command")), str(check.get("name", "Command check")), "terminal", "blocked", evidence=[{"kind": "command_policy", "command": command, "allowed": False}], limitations=["Command execution is disabled. Rerun with --allow-commands after reviewing the manifest."])
     if not _allowed(command, allowed_prefixes):

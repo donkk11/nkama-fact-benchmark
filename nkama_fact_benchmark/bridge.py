@@ -88,6 +88,31 @@ def _run_claude_verifier(binary: str, model: str, prompt: str, run_dir: str, tim
     return subprocess.run(command, capture_output=True, text=True, timeout=timeout, check=False, cwd=run_dir)
 
 
+def _write_bridge_report(result: dict[str, Any], run_dir: str) -> None:
+    (Path(run_dir) / BRIDGE_REPORT).write_text(json.dumps(result, indent=2), encoding="utf-8")
+
+
+def _finish_after_bad_builder(
+    result: dict[str, Any],
+    *,
+    payload: dict[str, Any],
+    harness_summary: dict[str, Any],
+    status: str,
+) -> dict[str, Any]:
+    run_dir = payload["output_dir"]
+    result["status"] = "blocked" if status == "blocked" else "fail"
+    result["verifier"].update(status="not_run", verdict="NOT_RUN")
+    result["harness_reverification"] = harness_summary
+    result["run_dir"] = run_dir
+    result["evidence_manifest"] = payload["evidence_manifest"]
+    result["answer"] = str(Path(run_dir) / "ai_output" / "ANSWER.md")
+    result["limitations"].append(
+        "Builder did not complete successfully; independent verifier was not allowed to convert a blocked/failed build into a pass."
+    )
+    _write_bridge_report(result, run_dir)
+    return result
+
+
 def run_bridge(
     *,
     task: str,
@@ -153,17 +178,39 @@ def run_bridge(
         # agent-run verifies without command execution, so command checks read
         # "blocked" at this stage; grade the builder on the full verification.
         build_summary = verify_manifest(payload["evidence_manifest"], allow_commands=True)["summary"]
+        build_status = build.get("status", "blocked")
+        model_run = build.get("model_run", {})
+        # run_agent_model computes its status without executing command checks,
+        # so a strong manifest (command_exit_zero) always reads "fail" there.
+        # Grade the builder on the full re-verification (clean_pass runs the
+        # commands); fall back to build_status only to label genuine failures.
         result["builder"].update(
-            status="pass" if build_summary.get("clean_pass") else build["status"],
-            model=builder_model, evidence_summary=build_summary,
+            status="pass" if build_summary.get("clean_pass") else build_status,
+            model=builder_model,
+            evidence_summary=build_summary,
+            model_run_status=model_run.get("status"),
+            provider_metadata=model_run.get("provider_metadata"),
         )
+        if result["builder"]["status"] != "pass":
+            return _finish_after_bad_builder(
+                result,
+                payload=payload,
+                harness_summary=build_summary,
+                status=result["builder"]["status"],
+            )
     else:  # codex builds
         payload = create_agent_package(task=task, output_dir=output_dir, title=title, overwrite=overwrite)
-        tool_policy = _build_tool_policy(
-            payload=payload, allow_external_model=True, max_budget_usd=max_budget_usd,
-            allow_claude_tools=False, allowed_dirs=[], allowed_commands=allowed_commands,
-            allowed_browser_mcp_tools="none", permission_mode=None,
-        )
+        tool_policy = {
+            "tool_mode": "codex_scoped_tools",
+            "allowed_directories": [payload["output_dir"]],
+            "allowed_commands": list(allowed_commands),
+            "allowed_external_model": allow_external_model,
+            "allowed_browser_mcp_tools": "none",
+            "budget_cap": max_budget_usd or "not set",
+            "claude_tools": "none",
+            "claude_allowed_tools": [],
+            "permission_mode": codex_sandbox_build,
+        }
         Path(payload["agent_protocol"]).write_text(render_agent_protocol(payload, tool_policy), encoding="utf-8")
         prompt = _agent_model_prompt(payload, tool_policy)
         try:
@@ -174,10 +221,28 @@ def run_bridge(
                 model="codex", exit_code=completed.returncode,
                 evidence_summary=build_summary, stdout_excerpt=_short_text(completed.stdout or "", 600),
             )
+            if completed.returncode != 0 and result["builder"]["status"] == "pass":
+                result["builder"]["status"] = "fail"
         except subprocess.TimeoutExpired:
-            result["builder"].update(status="blocked", model="codex")
+            try:
+                build_summary = verify_manifest(payload["evidence_manifest"], allow_commands=True)["summary"]
+            except Exception as exc:  # noqa: BLE001 - report verifier failure as evidence limitation.
+                build_summary = {"error": str(exc)}
+            result["builder"].update(status="blocked", model="codex", evidence_summary=build_summary)
             result["limitations"].append(f"Codex build phase exceeded {timeout_seconds}s timeout.")
-            return result
+            return _finish_after_bad_builder(
+                result,
+                payload=payload,
+                harness_summary=build_summary,
+                status="blocked",
+            )
+        if result["builder"]["status"] != "pass":
+            return _finish_after_bad_builder(
+                result,
+                payload=payload,
+                harness_summary=build_summary,
+                status=result["builder"]["status"],
+            )
 
     run_dir = payload["output_dir"]
     manifest = payload["evidence_manifest"]
@@ -209,7 +274,7 @@ def run_bridge(
     harness = verify_manifest(manifest, allow_commands=True)["summary"]
     result["harness_reverification"] = harness
 
-    if harness.get("clean_pass") and verdict == "PASS":
+    if result["builder"].get("status") == "pass" and harness.get("clean_pass") and verdict == "PASS":
         result["status"] = "pass"
     elif verdict == "BLOCKED" or not verdict_text:
         result["status"] = "blocked"
@@ -222,7 +287,7 @@ def run_bridge(
     result["run_dir"] = run_dir
     result["evidence_manifest"] = manifest
     result["answer"] = str(Path(run_dir) / "ai_output" / "ANSWER.md")
-    (Path(run_dir) / BRIDGE_REPORT).write_text(json.dumps(result, indent=2), encoding="utf-8")
+    _write_bridge_report(result, run_dir)
     return result
 
 

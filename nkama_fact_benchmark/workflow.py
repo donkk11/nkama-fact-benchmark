@@ -96,6 +96,7 @@ def _manifest_template() -> dict[str, Any]:
         "_instructions": [
             "This is a starter manifest. Replace or extend these checks to match the files the AI actually generated.",
             "Command checks are blocked by default and require nkama-evidence-layer --allow-commands plus explicit allowed_command_prefixes.",
+            "Use argv-style executable checks, for example: allowed_command_prefixes [[\"python3\"]] and command [\"python3\", \"test_project.py\"].",
             "Do not edit a blocked or failed report into a pass. Fix the evidence or keep the limitation visible.",
         ],
     }

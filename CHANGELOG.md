@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.1.27 — 2026-07-08
+
+- New `bridge` subcommand: connect two terminal agents with one command — one
+  builds under a scoped contract, the other independently verifies and signs a
+  verdict, and the harness re-verifies for clean_pass. No MCP server needed.
+- Prompt stage now opens with an Intent Contract: the builder must state goal,
+  audience, deliverable, definition of done, out-of-scope, and assumptions
+  before building; both report formats gain an explicit intent check.
+- Bridge verdict/evidence hardening and a new docs/BRIDGE_FLOW.md.
+
 ## 0.1.26 — 2026-07-05
 
 - Fixed the reviewed naming/implementation mismatch: summaries now include an

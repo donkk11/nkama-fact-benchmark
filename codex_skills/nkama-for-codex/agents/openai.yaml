@@ -1,0 +1,4 @@
+interface:
+  display_name: "Nkama for Codex"
+  short_description: "Run Codex work under Nkama evidence discipline."
+  default_prompt: "Use $nkama-for-codex to prepare, build, inspect, bridge, or verify this task with evidence."

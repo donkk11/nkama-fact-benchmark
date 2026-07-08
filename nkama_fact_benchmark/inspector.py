@@ -173,6 +173,11 @@ def _classify(
         return "fake_evidence"
     if code_files and evidence_depth == "strong":
         return "verified_build"
+    if evidence_depth == "strong" and evidence_summary and evidence_summary.get("fail", 0) == 0 and evidence_summary.get("blocked", 0) == 0:
+        # Command-level checks passed. The build is verified even when its files
+        # live outside this folder (the manifest verifies them in place). Do not
+        # downgrade to "incomplete" just because ai_output/ holds no local code.
+        return "verified_build"
     if code_files:
         return "working_code_unverified"
     if rich_documents and evidence_summary and evidence_summary.get("fail", 0) == 0 and evidence_summary.get("blocked", 0) == 0:

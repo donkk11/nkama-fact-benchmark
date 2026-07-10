@@ -80,11 +80,26 @@ Sonnet 4.6 (3/3 checks, provider-reported $0.0349) and Claude Fable 5
 
 ---
 
-## Verified case studies (reproduce them yourself)
+## Reproduce this yourself (portable, fresh-clone)
 
-All three were executed for real on 2026-07-02/03 on macOS (Darwin 24.5.0),
-with Claude Fable 5 (`claude-fable-5`) as the model under test. Every claim
-below is re-checkable with the listed command.
+The one example that verifies GREEN on any fresh clone — no absolute paths,
+no external files:
+
+```bash
+uvx --from nkama-fact-benchmark nkama-evidence-layer \
+    examples/portable_demo/evidence_manifest.json --allow-commands
+```
+
+Expect `3 pass, 0 fail, 0 blocked, clean_pass: true`. If it fails on your
+machine, that is a real bug — open an issue.
+
+## Historical case studies (maintainer-hosted, not fresh-clone portable)
+
+These ran for real on 2026-07 on the maintainer's macOS machine. Their
+manifests use absolute paths to that machine's workspace, so the re-verify
+commands below reproduce **only on that setup**, not on a fresh clone — they
+are inspectable evidence, not portable proofs. For a proof anyone can re-run,
+use `examples/portable_demo` above, or run the tasks in `docs/STANDARD_TASKS.md`.
 
 ### 1. Package selftest — 10/10
 

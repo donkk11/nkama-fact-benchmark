@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.1.28 — 2026-07-08
+
+- Fixed the product's core promise for strangers: added `examples/portable_demo`,
+  a self-contained example whose manifest uses ONLY relative paths and verifies
+  green on any fresh clone (`nkama-evidence-layer examples/portable_demo/evidence_manifest.json --allow-commands`).
+- RECOMMENDED_RUN.md now leads with that portable example; the older field
+  results are re-labeled "historical, maintainer-hosted, not fresh-clone
+  portable" — honest about their absolute-path manifests.
+- Fixed a version desync: `__init__.__version__` now reads the installed
+  package version (was pinned at 0.1.26 while releases moved on).
+- Added `tests/test_no_absolute_paths.py`: CI guard that fails if examples or
+  re-verify docs hardcode local machine paths.
+- inspect: strong clean command-evidence now classifies as verified_build even
+  when verified files live outside the run folder (false-negative fix).
+
+
 ## 0.1.27 — 2026-07-08
 
 - New `bridge` subcommand: connect two terminal agents with one command — one

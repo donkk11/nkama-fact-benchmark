@@ -4,3 +4,5 @@ dist/
 build/
 *.egg-info/
 .nkama_public_selftest/
+.DS_Store
+**/.DS_Store

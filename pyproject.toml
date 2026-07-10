@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "nkama-fact-benchmark"
-version = "0.1.27"
+version = "0.1.28"
 description = "Evidence-gated benchmark for testing whether AI assistants can prove what they claim."
 readme = "README_PYPI.md"
 requires-python = ">=3.9"

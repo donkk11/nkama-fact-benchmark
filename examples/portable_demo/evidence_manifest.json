@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "allowed_command_prefixes": [["python3"]],
+  "checks": [
+    {"id": "module_exists", "name": "module exists", "type": "file_exists", "path": "wordcount.py"},
+    {"id": "tests_exist", "name": "tests exist", "type": "file_exists", "path": "test_wordcount.py"},
+    {"id": "tests_pass", "name": "unit tests pass", "type": "command_exit_zero", "command": ["python3", "-m", "unittest", "test_wordcount"], "timeout_seconds": 60}
+  ]
+}

@@ -6,3 +6,7 @@ build/
 .nkama_public_selftest/
 .DS_Store
 **/.DS_Store
+
+# local probe scratch
+claude_probe_assets/
+claude_probe_file.md

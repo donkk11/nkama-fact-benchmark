@@ -33,6 +33,38 @@ uvx nkama-fact-benchmark run "Build a browser game with tests." --output nkama_r
 uvx --from nkama-fact-benchmark nkama-prompt-filter "Build a browser game with tests." --output prompt_check
 ```
 
+## The Nkama Way
+
+The discipline behind the package, in one loop:
+
+1. **One AI builds** under an explicit contract (constraints, output folder, evidence manifest).
+2. **A different AI independently verifies** — adversarially. It re-runs the commands, probes the
+   edge cases, and is expected to reject work that cannot prove itself.
+3. **Evidence gates the verdict.** A claim about the work is not proof; proof is a checkable
+   artifact — a real file, a real command's real exit code and output, a real diff. Blocked
+   evidence is not success.
+
+A run's record lives in its manifest and verdict files (the `.nfb` spirit: markdown + JSON you can
+re-run, diff, and audit later). If the evidence doesn't exist, the claim doesn't ship.
+
+## Real-World Results
+
+This discipline has shipped code into a stranger-maintained open-source security tool
+([kaaval](https://github.com/kaaval/kaaval), a Kubernetes RBAC scanner):
+
+- **[PR #45](https://github.com/kaaval/kaaval/pull/45)** (merged): friendly error + exit 2 when the
+  `--manifests` path is missing or unreadable. Built by Claude (Fable 5) under an Nkama contract;
+  independently verified by gpt-5.6-sol, which **rejected round 1** — the first patch let an
+  unreadable directory silently report a clean scan (exit 0), the exact false-negative a CI
+  security gate cannot afford. The corrected fix ships regression tests that exercise real
+  `chmod 000` conditions instead of mocks. The maintainer merged it citing those tests as
+  "the deciding detail."
+- **[PR #81](https://github.com/kaaval/kaaval/pull/81)** (merged): `--version` flag ([#40](https://github.com/kaaval/kaaval/issues/40))
+  and JUnit XML output ([#2](https://github.com/kaaval/kaaval/issues/2)), same pipeline.
+
+The full run folders — contracts, round-by-round verdicts, and evidence manifests — are the same
+artifacts this package prepares for you.
+
 ## The Recommended Run
 
 If you only copy one thing, paste this to a terminal-capable AI coding agent

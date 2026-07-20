@@ -61,6 +61,13 @@ This discipline has shipped code into a stranger-maintained open-source security
   "the deciding detail."
 - **[PR #81](https://github.com/kaaval/kaaval/pull/81)** (merged): `--version` flag ([#40](https://github.com/kaaval/kaaval/issues/40))
   and JUnit XML output ([#2](https://github.com/kaaval/kaaval/issues/2)), same pipeline.
+- **[PR #108](https://github.com/kaaval/kaaval/pull/108)** (submitted 2026-07-20, awaiting review):
+  new RBAC rule `token_automount` ([#7](https://github.com/kaaval/kaaval/issues/7), CIS 5.1.6 —
+  ServiceAccount tokens only mounted where necessary). Same two-model loop, and it worked again:
+  gpt-5.6-sol **rejected round 1** for two real defects Claude's own checks missed — four of the
+  five CLI output formats crashed on the new finding type, and Deployment pod-template overrides
+  went silently undetected. Both were fixed (not documented around), round 2 passed with the
+  probes re-run, and only then was the PR opened. 53 tests, evidence manifest `clean_pass: true`.
 
 The full run folders — contracts, round-by-round verdicts, and evidence manifests — are the same
 artifacts this package prepares for you.

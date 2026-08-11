@@ -50,3 +50,6 @@ nkama-truth-filter = "nkama_fact_benchmark.truth_filter:main"
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["nkama_fact_benchmark*"]
+
+[tool.setuptools.package-data]
+nkama_fact_benchmark = ["claude_skills/nkama/skills/*/SKILL.md"]

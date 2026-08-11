@@ -659,7 +659,46 @@ def build_parser() -> argparse.ArgumentParser:
     bridge.add_argument("--json", action="store_true", help="Print machine-readable JSON.")
     security = sub.add_parser("security-audit", help="Audit release artifacts before publishing.")
     security.add_argument("artifacts", nargs="+")
+
+    install_skills = sub.add_parser(
+        "install-skills",
+        help="Install the /nkama:run, /nkama:verify, /nkama:bridge Claude Code slash-command shortcuts.",
+    )
+    install_skills.add_argument(
+        "--target", default=None,
+        help="Skills directory to install into (default: ~/.claude/skills/nkama/skills).",
+    )
     return parser
+
+
+def install_claude_skills(target: str | Path | None = None) -> dict[str, Any]:
+    """Copy the bundled SKILL.md files onto disk where Claude Code looks for them.
+
+    These are static instruction files only — no credentials, no network calls.
+    /nkama:bridge itself still requires the user's own Codex CLI to be installed
+    and authenticated; this only wires up the shortcut, not the underlying access.
+    """
+    import shutil
+
+    bundled = Path(__file__).parent / "claude_skills" / "nkama" / "skills"
+    dest_root = Path(target).expanduser() if target else Path.home() / ".claude" / "skills" / "nkama" / "skills"
+    installed = []
+    for skill_dir in sorted(bundled.iterdir()):
+        if not skill_dir.is_dir():
+            continue
+        dest = dest_root / skill_dir.name
+        dest.mkdir(parents=True, exist_ok=True)
+        for f in skill_dir.iterdir():
+            shutil.copy2(f, dest / f.name)
+        installed.append(str(dest / "SKILL.md"))
+    return {
+        "installed": installed,
+        "note": (
+            "/nkama:run and /nkama:verify need only uvx. "
+            "/nkama:bridge additionally requires the Codex CLI installed and authenticated "
+            "under your own account — this command does not provide or touch that."
+        ),
+    }
 
 
 def main() -> None:
@@ -734,6 +773,10 @@ def main() -> None:
             report = audit_artifacts(args.artifacts)
             print(json.dumps(report, indent=2))
             raise SystemExit(0 if report["summary"]["fail"] == 0 else 1)
+        if args.subcommand == "install-skills":
+            report = install_claude_skills(args.target)
+            print(json.dumps(report, indent=2))
+            return
         print(render_intro())
     except FileExistsError as exc:
         raise SystemExit(

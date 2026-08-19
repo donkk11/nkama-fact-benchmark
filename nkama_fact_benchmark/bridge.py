@@ -14,6 +14,7 @@ from __future__ import annotations
 import argparse
 import glob
 import json
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -33,6 +34,7 @@ AGENTS = ("claude", "codex")
 CODEX_APP_GLOB = "/Applications/Codex*.app/Contents/Resources/codex"
 DEFAULT_ALLOWED_COMMANDS = ["python3 *", "uvx *"]
 VERDICT_FILE = "VERIFIER_VERDICT.md"
+CHECKS_FILE = "VERIFIER_CHECKS.json"
 BRIDGE_REPORT = "BRIDGE_REPORT.json"
 
 
@@ -54,7 +56,7 @@ def _verifier_prompt(name: str, manifest: str, run_dir: str) -> str:
         "agent built the contents of ai_output/ and reported its own results. "
         "Do NOT trust that report.\n\n"
         "Independently run this exact command and read the JSON summary:\n"
-        f"uvx --from nkama-fact-benchmark nkama-evidence-layer {manifest} --allow-commands\n\n"
+        f"uvx --no-cache --from nkama-fact-benchmark nkama-evidence-layer {manifest} --allow-commands\n\n"
         "Also read ai_output/ANSWER.md and compare its claims to the summary "
         "you personally observed.\n\n"
         f"Then write {VERDICT_FILE} in {run_dir} containing: a first line "
@@ -62,6 +64,18 @@ def _verifier_prompt(name: str, manifest: str, run_dir: str) -> str:
         "evidence summary JSON you observed; any discrepancies between the "
         "builder's claims and your observation; and the closing signature "
         f"'Verified by {name}'.\n\n"
+        f"Also write {CHECKS_FILE} in {run_dir} — a JSON object with one entry "
+        "per check id from the manifest you just ran, each recording whether "
+        "you personally agree that check's real result matches what you "
+        "observed:\n"
+        '{"per_check": [{"id": "<check id from the manifest>", "agrees": true|false, '
+        '"note": "required and specific if agrees is false — say exactly what you '
+        'observed instead"}]}\n\n'
+        "One entry per check id in the manifest, no more, no fewer. This file "
+        "is what lets a human tell 'the verifier agreed with everything' apart "
+        "from 'the verifier only checked the overall shape' — do not skip it "
+        "and do not copy the builder's own per-check verdicts without "
+        "independently confirming each one yourself.\n\n"
         "If you cannot run the command (missing tool, no network, denied "
         "permission), the verdict is BLOCKED - never guess and never copy the "
         "builder's numbers."
@@ -263,19 +277,111 @@ def run_bridge(
     verdict_path = Path(run_dir) / VERDICT_FILE
     verdict_text = verdict_path.read_text(encoding="utf-8") if verdict_path.exists() else ""
     first_line = verdict_text.splitlines()[0].strip() if verdict_text else ""
+    # Real bug, found by an adversarial audit: a loose substring search let a
+    # negated sentence ("this is NOT A PASS") parse as PASS, and "UNBLOCKED"
+    # parse as BLOCKED. The prompt tells the verifier to write the literal
+    # "Verdict: PASS/FAIL/BLOCKED" as the first line — require that exact
+    # shape instead of scanning for the word anywhere in the line.
     verdict = "MISSING"
-    for candidate in ("PASS", "FAIL", "BLOCKED"):
-        if candidate in first_line.upper():
-            verdict = candidate
-            break
+    match = re.match(r"verdict\s*:\s*(PASS|FAIL|BLOCKED)\b", first_line, re.IGNORECASE)
+    if match:
+        verdict = match.group(1).upper()
     result["verifier"].update(verdict=verdict, verdict_file=str(verdict_path) if verdict_text else None)
 
     # ---- harness re-verification (trust nobody, including the verifier) -----
-    harness = verify_manifest(manifest, allow_commands=True)["summary"]
+    harness_full = verify_manifest(manifest, allow_commands=True)
+    harness = harness_full["summary"]
     result["harness_reverification"] = harness
 
-    if result["builder"].get("status") == "pass" and harness.get("clean_pass") and verdict == "PASS":
+    # ---- merge the verifier's structured per-check findings, if it wrote them ----
+    # Real, not assumed: a first-line "Verdict: PASS" can't tell a human whether
+    # the verifier actually re-checked every claim or only the overall shape.
+    # This is the fix for that — see nkama:bridge design notes.
+    checks_path = Path(run_dir) / CHECKS_FILE
+    per_check_review: dict[str, dict[str, Any]] = {}
+    if checks_path.exists():
+        try:
+            parsed = json.loads(checks_path.read_text(encoding="utf-8"))
+            for entry in parsed.get("per_check", []):
+                cid = str(entry.get("id", ""))
+                if not cid:
+                    continue
+                # Real bug, found by an adversarial audit: `if agrees` used
+                # Python truthiness, so a verifier writing the JSON string
+                # "false" (truthy, since it's a non-empty string) read as
+                # confirmed. Require the literal JSON boolean true.
+                agrees = entry.get("agrees") is True
+                per_check_review[cid] = {
+                    "independent_review": "confirmed" if agrees else "disputed",
+                    "independent_review_note": entry.get("note") if not agrees else None,
+                }
+        except (json.JSONDecodeError, TypeError, AttributeError) as exc:
+            result["limitations"].append(f"{CHECKS_FILE} existed but could not be parsed: {exc}")
+    else:
+        result["limitations"].append(
+            f"Verifier did not write {CHECKS_FILE} — per-check independent_review "
+            "stays 'not_requested' on every check; only the overall verdict is cross-verified."
+        )
+
+    reviewed_checks = []
+    for check in harness_full.get("checks", []):
+        check = dict(check)
+        review = per_check_review.get(check.get("id", ""))
+        if review:
+            check["independent_review"] = review["independent_review"]
+            if review["independent_review_note"]:
+                check["independent_review_note"] = review["independent_review_note"]
+        reviewed_checks.append(check)
+    result["checks"] = reviewed_checks
+    result["per_check_review_count"] = len(per_check_review)
+    real_check_ids = {str(c.get("id", "")) for c in harness_full.get("checks", [])}
+    total_checks = len(real_check_ids)
+    # Real gaps, found across two rounds of adversarial audit — three separate
+    # ways "review_complete" could be faked before this:
+    #   1. Only reviewing 1 of N checks (fixed first round: count >= total).
+    #   2. Reviewing every real check but marking every one "agrees: false" —
+    #      count-based completeness didn't care whether reviews agreed.
+    #   3. Padding VERIFIER_CHECKS.json with fake/unknown ids to inflate the
+    #      count without covering the real checks at all.
+    # Fixed properly now: every real check id must be present AND confirmed —
+    # coverage is checked by id intersection, not by count.
+    matched_ids = real_check_ids & per_check_review.keys()
+    all_matched_confirmed = all(
+        per_check_review[cid]["independent_review"] == "confirmed" for cid in matched_ids
+    )
+    review_complete = (
+        total_checks == 0
+        or (matched_ids == real_check_ids and all_matched_confirmed)
+    )
+
+    if (
+        result["builder"].get("status") == "pass"
+        and harness.get("clean_pass")
+        and verdict == "PASS"
+        and review_complete
+    ):
         result["status"] = "pass"
+    elif verdict == "PASS" and not review_complete:
+        result["status"] = "fail"
+        # Real bug, found by an adversarial audit: this always blamed an
+        # incomplete count, even when every real check WAS reviewed but one
+        # or more came back disputed — a different failure than "didn't
+        # review enough". Diagnose the actual cause instead of guessing.
+        if matched_ids != real_check_ids:
+            result["limitations"].append(
+                f"Verifier wrote 'Verdict: PASS' but only reviewed "
+                f"{len(matched_ids)}/{total_checks} real checks individually "
+                f"in {CHECKS_FILE} — an incomplete review is not a pass."
+            )
+        else:
+            disputed_ids = sorted(
+                cid for cid in matched_ids if per_check_review[cid]["independent_review"] != "confirmed"
+            )
+            result["limitations"].append(
+                f"Verifier wrote 'Verdict: PASS' but disputed {len(disputed_ids)}/{total_checks} "
+                f"checks individually in {CHECKS_FILE} ({', '.join(disputed_ids)}) — an overall "
+                "PASS cannot override a disputed individual check."
+            )
     elif verdict == "BLOCKED" or not verdict_text:
         result["status"] = "blocked"
         result["limitations"].append(

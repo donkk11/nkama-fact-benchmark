@@ -4,5 +4,5 @@ requires-python = ">=3.9"
 
 [[package]]
 name = "nkama-fact-benchmark"
-version = "0.1.20"
+version = "0.1.28"
 source = { editable = "." }

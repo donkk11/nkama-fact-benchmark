@@ -10,3 +10,6 @@ build/
 # local probe scratch
 claude_probe_assets/
 claude_probe_file.md
+
+# editor lock files
+.~lock.*#

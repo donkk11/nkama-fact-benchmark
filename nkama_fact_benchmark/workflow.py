@@ -92,6 +92,18 @@ def _manifest_template() -> dict[str, Any]:
                 "path": "ANSWER.md",
                 "text": "Limitations:",
             },
+            # Real bug, found by an adversarial audit: the three checks above
+            # only test for section-header words the placeholder ANSWER.md
+            # already contains verbatim, so an untouched, never-built run
+            # folder verified as clean_pass:true. This check fails until the
+            # placeholder text is actually replaced with real content.
+            {
+                "id": "answer_placeholder_replaced",
+                "name": "Placeholder answer text has been replaced with real content",
+                "type": "file_not_contains",
+                "path": "ANSWER.md",
+                "text": "Replace this placeholder",
+            },
         ],
         "_instructions": [
             "This is a starter manifest. Replace or extend these checks to match the files the AI actually generated.",

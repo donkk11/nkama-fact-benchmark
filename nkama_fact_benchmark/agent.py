@@ -822,7 +822,7 @@ def run_agent_model(
         model_status = "blocked"
     elif not answer_contract["accepted"]:
         model_status = "fail"
-    elif evidence_report["summary"]["fail"] == 0 and evidence_report["summary"]["blocked"] == 0:
+    elif evidence_report["summary"].get("clean_pass"):
         model_status = "pass"
     else:
         model_status = "fail"

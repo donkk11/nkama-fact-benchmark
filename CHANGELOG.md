@@ -1,5 +1,45 @@
 # Changelog
 
+## 0.1.30 — 2026-08-19
+
+Two rounds of adversarial third-party audit (Codex and Grok, each instructed to
+attack the tool rather than validate it) found real ways this package could
+report success without real evidence. Every fix below was reproduced first as a
+failing case, then re-verified after the fix.
+
+- **The starter template self-passed.** A freshly created run folder — zero work
+  done, placeholder `ANSWER.md` untouched — verified as `clean_pass: true`,
+  because the three starter checks only looked for the words "Evidence:" and
+  "Limitations:", which the placeholder itself contained. Added a real
+  `file_not_contains` check type and a starter check that fails until the
+  placeholder text is actually replaced.
+- **`clean_pass` now requires `checks_run > 0`.** An empty manifest previously
+  certified "nothing checked" as "nothing wrong". Fixed in `evidence_layer`,
+  and propagated to every module that had copied the old
+  `fail == 0 and blocked == 0` formula instead of reading the field:
+  `agent` (the live agent-run grader), `capability`, `truth_filter`,
+  `inspector`, `story`, and the selftest summary.
+- **CLI exit codes were always 0.** `nkama-evidence-layer`, `inspect`,
+  `truth-filter run`, and `selftest` all exited 0 regardless of result, so any
+  CI pipeline gating on them never actually gated. All now exit 1 on failure.
+- **Malformed checks silently passed.** `file_contains` with an empty/omitted
+  `text` matched everything (`"" in x` is always true); `no_forbidden_claims`
+  with an empty `forbidden` list found nothing by construction. Both are now
+  `blocked`, not `pass`.
+- **Bridge verifier bypasses.** `"agrees": "false"` (a JSON string, truthy in
+  Python) counted as *confirmed*; a verdict line reading "this is NOT A PASS"
+  parsed as PASS via loose substring matching. Now requires a literal JSON
+  `true` and an exact `Verdict: PASS|FAIL|BLOCKED` first line. The
+  incomplete-review message also now distinguishes "didn't review every check"
+  from "reviewed them and disputed some".
+- **`claim-check` gaps.** A computed-but-unused tighter PR filter meant the
+  loose full-text search decided pass/fail; PR *bodies* and *reviews* were never
+  scanned (only comments); and GitHub's own `closedByPullRequestsReferences`
+  signal — which correctly links closing PRs across repositories — was unused.
+  All three fixed.
+- Version desync fixed: README/README_PYPI pinned `0.1.25` while the published
+  package was `0.1.29` and `__init__` fell back to `0.1.28`.
+
 ## 0.1.28 — 2026-07-08
 
 - Fixed the product's core promise for strangers: added `examples/portable_demo`,
@@ -29,7 +69,8 @@
 ## 0.1.26 — 2026-07-05
 
 - Fixed the reviewed naming/implementation mismatch: summaries now include an
-  unambiguous `clean_pass` field (`fail == 0 AND blocked == 0`) alongside
+  unambiguous `clean_pass` field (then defined as `fail == 0 AND blocked == 0`;
+  tightened in 0.1.30 to also require `checks_run > 0`) alongside
   `passed_all_unblocked` (which keeps its literal meaning: no failures among
   non-blocked checks). Reported in external deep-research review.
 - Published `evidence/`: raw logs, manifests, provider run reports, and

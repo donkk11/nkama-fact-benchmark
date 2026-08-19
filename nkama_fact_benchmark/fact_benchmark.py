@@ -331,7 +331,10 @@ def check_run_workflow() -> dict[str, Any]:
     assertions = {
         "run_status_is_prepared": payload["status"] == "prepared",
         "evidence_prompt_exists": Path(payload["evidence_prompt"]).exists(),
-        "starter_manifest_passes": report["summary"]["fail"] == 0 and report["summary"]["blocked"] == 0,
+        # An untouched starter manifest must NOT clean_pass — that was a real
+        # bug an adversarial audit found (a fresh, never-built run folder
+        # verified as clean_pass:true). This asserts the fix holds.
+        "starter_manifest_correctly_fails_when_untouched": not report["summary"].get("clean_pass", True),
     }
     limitations = [name for name, passed in assertions.items() if not passed]
     return {
@@ -360,7 +363,9 @@ def check_agent_protocol() -> dict[str, Any]:
     assertions = {
         "protocol_tells_agent_to_ask_user": "Ask the user for the task" in protocol,
         "agent_protocol_file_exists": Path(payload["agent_protocol"]).exists(),
-        "agent_manifest_passes": report["summary"]["fail"] == 0 and report["summary"]["blocked"] == 0,
+        # Same starter-template fix as run_workflow_smoke — an untouched
+        # manifest must correctly fail, not pass.
+        "agent_manifest_correctly_fails_when_untouched": not report["summary"].get("clean_pass", True),
     }
     limitations = [name for name, passed in assertions.items() if not passed]
     return {
@@ -504,7 +509,7 @@ def check_pilot_harness_smoke() -> dict[str, Any]:
         "phase_a_created": phase_dir.exists(),
         "three_conditions_created": all((phase_dir / "conditions" / name).exists() for name in ["baseline_plain", "decomposition_only", "nkama_protocol"]),
         "preflight_written": (temp / "preflight_report.json").exists() and (temp / "preflight_report.md").exists(),
-        "manifest_passes": report["summary"]["fail"] == 0 and report["summary"]["blocked"] == 0,
+        "manifest_passes": report["summary"].get("clean_pass", False),
         "status_is_explicit": payload["status"] in {"ready_to_run", "prepared_with_blocked_execution"},
     }
     limitations = [name for name, passed in assertions.items() if not passed]
@@ -548,7 +553,7 @@ def run_fact_benchmark() -> dict[str, Any]:
         "blocked": sum(1 for item in checks if item["status"] == "blocked"),
     }
     summary["passed_all_unblocked"] = summary["fail"] == 0
-    summary["clean_pass"] = summary["fail"] == 0 and summary["blocked"] == 0
+    summary["clean_pass"] = summary["checks_run"] > 0 and summary["fail"] == 0 and summary["blocked"] == 0
     return {
         "schema_version": 1,
         "run_id": f"fact_{datetime.now().strftime('%Y%m%dT%H%M%S')}_{uuid.uuid4().hex[:8]}",
@@ -586,6 +591,9 @@ def build_parser() -> argparse.ArgumentParser:
     inspect = sub.add_parser("inspect", help="Inspect a Nkama run folder and classify what the AI produced.")
     inspect.add_argument("folder")
     inspect.add_argument("--allow-commands", action="store_true")
+    story = sub.add_parser("story", help="Generate NKAMA_STORY.md — the plain-language companion to a run's real evidence (the Nkama Voice; see NKAMA_VOICE.md).")
+    story.add_argument("--at", required=True, help="Run folder or evidence_manifest.json path")
+    story.add_argument("--allow-commands", action="store_true")
     prompt = sub.add_parser("prompt", help="Wrap a prompt with evidence-gated verification rules.")
     prompt.add_argument("prompt", nargs="?")
     prompt.add_argument("--file")
@@ -668,6 +676,18 @@ def build_parser() -> argparse.ArgumentParser:
         "--target", default=None,
         help="Skills directory to install into (default: ~/.claude/skills/nkama/skills).",
     )
+
+    claim_check = sub.add_parser(
+        "claim-check",
+        help="Check whether a GitHub issue is actually unclaimed before building a fix "
+             "(checks state, assignees, claim-language in the issue AND its linked PRs' comments).",
+    )
+    claim_check.add_argument("repo", help="owner/repo the issue is filed in")
+    claim_check.add_argument("issue_number", type=int)
+    claim_check.add_argument(
+        "--also-check-repo", action="append", default=[], dest="also_check_repos",
+        help="Additional repo (owner/repo) to search for linked PRs, e.g. a dependency repo. Repeatable.",
+    )
     return parser
 
 
@@ -711,8 +731,12 @@ def main() -> None:
             print(render_activation())
             return
         if args.subcommand == "selftest":
-            print(json.dumps(run_fact_benchmark(), indent=2))
-            return
+            report = run_fact_benchmark()
+            print(json.dumps(report, indent=2))
+            # Real bug, found by an adversarial audit: this exited 0
+            # unconditionally, so "selftest" could never fail a CI pipeline
+            # even with real failing checks.
+            raise SystemExit(0 if report["summary"].get("clean_pass") else 1)
         if args.subcommand == "browser-benchmark":
             print(render_browser_benchmark())
             return
@@ -727,9 +751,18 @@ def main() -> None:
             run_cli(args)
             return
         if args.subcommand == "inspect":
-            from .inspector import inspect_run_folder
+            from .inspector import _VERIFIED_CLASSIFICATIONS, inspect_run_folder
 
-            print(json.dumps(inspect_run_folder(args.folder, allow_commands=args.allow_commands), indent=2))
+            report = inspect_run_folder(args.folder, allow_commands=args.allow_commands)
+            print(json.dumps(report, indent=2))
+            # Real bug, found by an adversarial audit: this exited 0
+            # unconditionally, duplicating the same bug already fixed in
+            # inspector.py's own standalone CLI entry point.
+            raise SystemExit(0 if report.get("classification") in _VERIFIED_CLASSIFICATIONS else 1)
+        if args.subcommand == "story":
+            from .story import run_cli
+
+            run_cli(args)
             return
         if args.subcommand == "prompt":
             from .prompt_filter import run_cli
@@ -777,6 +810,12 @@ def main() -> None:
             report = install_claude_skills(args.target)
             print(json.dumps(report, indent=2))
             return
+        if args.subcommand == "claim-check":
+            from .claim_check import check_issue_claim
+
+            report = check_issue_claim(args.repo, args.issue_number, args.also_check_repos)
+            print(json.dumps(report, indent=2))
+            raise SystemExit(0 if report["verdict"] == "CLEAR" else 1)
         print(render_intro())
     except FileExistsError as exc:
         raise SystemExit(

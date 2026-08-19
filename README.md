@@ -45,7 +45,11 @@ The discipline behind the package, in one loop:
    evidence is not success.
 
 A run's record lives in its manifest and verdict files (the `.nfb` spirit: markdown + JSON you can
-re-run, diff, and audit later). If the evidence doesn't exist, the claim doesn't ship.
+re-run, diff, and audit later). The evidence layer verifies that your declared checks pass — it
+cannot know whether your checks are worth passing. A strong manifest (real commands, real tests)
+gives you a real result; a weak one (file existence, substring matches) gives you exactly what it
+checked and nothing more. Write manifests accordingly, and read [MANIFEST_QUALITY.md](docs/MANIFEST_QUALITY.md)
+before trusting a `clean_pass` you didn't design yourself.
 
 ## Real-World Results
 
@@ -61,7 +65,7 @@ This discipline has shipped code into a stranger-maintained open-source security
   "the deciding detail."
 - **[PR #81](https://github.com/kaaval/kaaval/pull/81)** (merged): `--version` flag ([#40](https://github.com/kaaval/kaaval/issues/40))
   and JUnit XML output ([#2](https://github.com/kaaval/kaaval/issues/2)), same pipeline.
-- **[PR #108](https://github.com/kaaval/kaaval/pull/108)** (submitted 2026-07-20, awaiting review):
+- **[PR #108](https://github.com/kaaval/kaaval/pull/108)** (merged 2026-07-26):
   new RBAC rule `token_automount` ([#7](https://github.com/kaaval/kaaval/issues/7), CIS 5.1.6 —
   ServiceAccount tokens only mounted where necessary). Same two-model loop, and it worked again:
   gpt-5.6-sol **rejected round 1** for two real defects Claude's own checks missed — four of the
@@ -114,7 +118,7 @@ third-party replication; independent replications are invited via
 For CI or any reproducible workflow, pin the version:
 
 ```bash
-uvx --from 'nkama-fact-benchmark==0.1.25' nkama-fact-benchmark selftest
+uvx --from 'nkama-fact-benchmark==0.1.30' nkama-fact-benchmark selftest
 ```
 
 Before publishing or sharing a built package, audit the release files:

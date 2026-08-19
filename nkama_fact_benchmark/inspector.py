@@ -122,8 +122,12 @@ def _evidence_depth(manifest_types: list[str], evidence_summary: dict[str, Any] 
     if evidence_summary.get("checks_run", 0) == 0:
         return "none"
     if any(kind in {"command", "command_exit_zero"} for kind in manifest_types):
-        return "strong" if evidence_summary.get("blocked", 0) == 0 and evidence_summary.get("fail", 0) == 0 else "command_blocked"
-    if any(kind in {"file_contains", "no_forbidden_claims"} for kind in manifest_types):
+        # Read clean_pass directly rather than re-deriving fail==0/blocked==0
+        # here — functionally equivalent given the checks_run guard above,
+        # but re-deriving it was exactly the anti-pattern an adversarial
+        # audit kept finding copies of. One source of truth, not a copy.
+        return "strong" if evidence_summary.get("clean_pass") else "command_blocked"
+    if any(kind in {"file_contains", "file_not_contains", "no_forbidden_claims"} for kind in manifest_types):
         return "shallow"
     return "presence_only"
 
@@ -171,20 +175,20 @@ def _classify(
             return "blocked"
     if _answer_claims_verification(answer_text) and evidence_depth in {"none", "presence_only"}:
         return "fake_evidence"
-    if code_files and evidence_depth == "strong":
+    if code_files and evidence_depth == "strong" and evidence_summary and evidence_summary.get("clean_pass"):
         return "verified_build"
-    if evidence_depth == "strong" and evidence_summary and evidence_summary.get("fail", 0) == 0 and evidence_summary.get("blocked", 0) == 0:
+    if evidence_depth == "strong" and evidence_summary and evidence_summary.get("clean_pass"):
         # Command-level checks passed. The build is verified even when its files
         # live outside this folder (the manifest verifies them in place). Do not
         # downgrade to "incomplete" just because ai_output/ holds no local code.
         return "verified_build"
     if code_files:
         return "working_code_unverified"
-    if rich_documents and evidence_summary and evidence_summary.get("fail", 0) == 0 and evidence_summary.get("blocked", 0) == 0:
+    if rich_documents and evidence_summary and evidence_summary.get("clean_pass"):
         return "working_document"
     if design_like:
         return "design_only"
-    if output_files and evidence_summary and evidence_summary.get("fail", 0) == 0 and evidence_summary.get("blocked", 0) == 0:
+    if output_files and evidence_summary and evidence_summary.get("clean_pass"):
         return "verified_files_shallow"
     return "incomplete"
 
@@ -269,7 +273,7 @@ def inspect_run_folder(target: str | Path, *, allow_commands: bool = False) -> d
         {
             "id": "evidence_manifest",
             "status": "pass"
-            if evidence_summary and evidence_summary.get("fail", 0) == 0 and evidence_summary.get("blocked", 0) == 0
+            if evidence_summary and evidence_summary.get("clean_pass")
             else "blocked"
             if evidence_error or not manifest_file.exists() or manifest is None
             else "fail",
@@ -373,9 +377,21 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+# Classifications that require real, clean_pass evidence behind them —
+# everything else (blocked, incomplete, fake_evidence, failed_evidence,
+# working_code_unverified, design_only) means "not verified," and a CI
+# pipeline gating on this CLI needs that to be a real non-zero exit.
+_VERIFIED_CLASSIFICATIONS = {"verified_build", "working_document", "verified_files_shallow"}
+
+
 def main() -> None:
     args = build_parser().parse_args()
-    print(json.dumps(inspect_run_folder(args.folder, allow_commands=args.allow_commands), indent=2))
+    report = inspect_run_folder(args.folder, allow_commands=args.allow_commands)
+    print(json.dumps(report, indent=2))
+    # Real bug, found by an adversarial audit: this exited 0 unconditionally,
+    # so a CI pipeline piping this straight into a gate never actually gated
+    # on anything.
+    raise SystemExit(0 if report.get("classification") in _VERIFIED_CLASSIFICATIONS else 1)
 
 
 if __name__ == "__main__":

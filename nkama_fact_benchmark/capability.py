@@ -417,7 +417,10 @@ def _status_counts(checks: list[dict[str, Any]]) -> dict[str, Any]:
         "blocked": sum(1 for item in checks if item["status"] == "blocked"),
     }
     summary["passed_all_unblocked"] = summary["fail"] == 0
-    summary["clean_pass"] = summary["fail"] == 0 and summary["blocked"] == 0
+    # Real bug, found by an adversarial audit: without the checks_run > 0
+    # guard, an empty check list reported clean_pass: true (nothing checked
+    # certified as nothing wrong).
+    summary["clean_pass"] = summary["checks_run"] > 0 and summary["fail"] == 0 and summary["blocked"] == 0
     return summary
 
 
@@ -694,7 +697,7 @@ def run_capability_test(*, output_dir: str | Path | None = None, overwrite: bool
     (ai_output / "ANSWER.md").write_text(_answer_text(report_skeleton), encoding="utf-8")
     evidence_report = verify_manifest(manifest_path)
     report_skeleton["evidence_report"] = evidence_report
-    report_skeleton["summary"]["evidence_manifest_pass"] = evidence_report["summary"]["fail"] == 0 and evidence_report["summary"]["blocked"] == 0
+    report_skeleton["summary"]["evidence_manifest_pass"] = evidence_report["summary"].get("clean_pass", False)
     (root / CAPABILITY_REPORT_JSON).write_text(json.dumps(report_skeleton, indent=2), encoding="utf-8")
     return report_skeleton
 

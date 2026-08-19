@@ -101,7 +101,11 @@ def run_submission(contract: dict[str, Any], submission: dict[str, Any], *, allo
         return {"name": name, "path": str(path), "status": "blocked", "summary": {}, "limitations": ["Missing evidence_manifest.json."]}
     report = verify_manifest(manifest, allow_commands=allow_commands)
     summary = report["summary"]
-    status = "pass" if summary["fail"] == 0 and summary["blocked"] == 0 else "fail"
+    # Real bug, found by an adversarial audit: this duplicated evidence_layer's
+    # old "fail==0 and blocked==0" logic instead of using its own clean_pass
+    # field, so the empty-manifest fix there never propagated here — an empty
+    # manifest still reported "pass" through this path. Use the real field.
+    status = "pass" if summary.get("clean_pass") else "fail"
     return {
         "name": name,
         "path": str(path),
@@ -189,7 +193,10 @@ def main() -> None:
         report = run_contract(args.contract_dir, submission_names=args.submission, allow_commands=args.allow_commands)
         root = Path(args.contract_dir).expanduser().resolve()
         print(json.dumps({"summary": report["summary"], "json_output": str(root / COMPARISON_JSON), "markdown_output": str(root / COMPARISON_MD)}, indent=2))
-        return
+        # Real bug, found by an adversarial audit: this exited 0
+        # unconditionally, even when every submission failed or was blocked.
+        summary = report["summary"]
+        raise SystemExit(0 if summary["submissions"] > 0 and summary["fail"] == 0 and summary["blocked"] == 0 else 1)
     build_parser().print_help()
 
 

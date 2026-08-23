@@ -4,6 +4,7 @@ import argparse
 import hashlib
 import importlib.metadata as importlib_metadata
 import json
+import sys
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
@@ -594,6 +595,11 @@ def build_parser() -> argparse.ArgumentParser:
     story = sub.add_parser("story", help="Generate NKAMA_STORY.md — the plain-language companion to a run's real evidence (the Nkama Voice; see NKAMA_VOICE.md).")
     story.add_argument("--at", required=True, help="Run folder or evidence_manifest.json path")
     story.add_argument("--allow-commands", action="store_true")
+    youtube = sub.add_parser("youtube-transcribe", help="Fetch a YouTube video's own real captions (yt-dlp, never an LLM guess) and wrap them in a nkama evidence run.")
+    youtube.add_argument("url", help="YouTube video URL")
+    youtube.add_argument("--output", default=None, help="Run output directory")
+    youtube.add_argument("--lang", default="en", help="Caption language (default: en)")
+    youtube.add_argument("--overwrite", action="store_true")
     prompt = sub.add_parser("prompt", help="Wrap a prompt with evidence-gated verification rules.")
     prompt.add_argument("prompt", nargs="?")
     prompt.add_argument("--file")
@@ -759,6 +765,20 @@ def main() -> None:
             # unconditionally, duplicating the same bug already fixed in
             # inspector.py's own standalone CLI entry point.
             raise SystemExit(0 if report.get("classification") in _VERIFIED_CLASSIFICATIONS else 1)
+        if args.subcommand == "youtube-transcribe":
+            from .youtube_transcribe import run_youtube_transcribe
+
+            try:
+                result = run_youtube_transcribe(
+                    args.url, output_dir=args.output, lang=args.lang, overwrite=args.overwrite,
+                )
+            except (RuntimeError, FileExistsError) as exc:
+                print(f"error: {exc}", file=sys.stderr)
+                raise SystemExit(1)
+            print(json.dumps(result, indent=2, default=str))
+            manifest_path = Path(result["ai_output_dir"]) / "evidence_manifest.json"
+            print(f"\nverify with: uvx --from nkama-fact-benchmark nkama-evidence-layer {manifest_path} --allow-commands")
+            return
         if args.subcommand == "story":
             from .story import run_cli
 

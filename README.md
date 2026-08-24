@@ -118,7 +118,7 @@ third-party replication; independent replications are invited via
 For CI or any reproducible workflow, pin the version:
 
 ```bash
-uvx --from 'nkama-fact-benchmark==0.1.30' nkama-fact-benchmark selftest
+uvx --from 'nkama-fact-benchmark==0.1.31' nkama-fact-benchmark selftest
 ```
 
 Before publishing or sharing a built package, audit the release files:

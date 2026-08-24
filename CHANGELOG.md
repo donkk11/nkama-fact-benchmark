@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.1.31 — 2026-08-24
+
+- New `youtube-transcribe` subcommand: fetches a YouTube video's own real
+  official/auto caption track via `yt-dlp` — never an LLM guess at what was
+  said — and wraps it in a real nkama evidence-gated run package. Refuses to
+  fabricate a transcript when `yt-dlp` or real captions aren't available;
+  exits with an honest error instead. Verified end to end before release: a
+  real video with real captions produced a genuine transcript with
+  `clean_pass: true`; a real video with no captions correctly refused to
+  invent one.
+
 ## 0.1.30 — 2026-08-19
 
 Two rounds of adversarial third-party audit (Codex and Grok, each instructed to

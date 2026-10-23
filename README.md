@@ -46,6 +46,10 @@ This discipline has shipped real code into a stranger-maintained open-source sec
   went silently undetected. Both were fixed (not documented around), round 2 passed with the
   probes re-run, and only then was the PR opened. 53 tests, evidence manifest `clean_pass: true`.
 
+The same loop has caught defects humans missed: in two browser-game builds, a physics-based
+completability check wired into the manifest found a genuinely impossible jump in a hand-made
+level.
+
 The full run folders — contracts, round-by-round verdicts, and evidence manifests — are published
 in this repository's `evidence/` folder. They are maintainer-hosted evidence, not third-party
 replication; independent replications are invited via `evidence/README.md` and get listed.
@@ -57,30 +61,20 @@ screen-capture of a build-then-verify loop exists.)*
 
 ## Get Started
 
-No install step — `uvx` fetches and runs the tool on demand. Paste this to a terminal-capable AI
-coding agent (Claude Code, Codex, Cursor, or similar):
+No install step. Give this one line to any terminal-capable AI coding agent — Claude Code, Codex,
+Cursor:
 
-```text
-Run: uvx --no-cache nkama-fact-benchmark agent
-Follow the protocol it prints for the rest of this session.
-Then build my task inside a run folder created with:
-uvx --no-cache nkama-fact-benchmark run "MY TASK" --output nkama_run_my_task
-Put outputs in ai_output/, extend ai_output/evidence_manifest.json with real
-checks (file_exists, file_contains, command_exit_zero), and verify with:
-uvx --no-cache --from nkama-fact-benchmark nkama-evidence-layer nkama_run_my_task/ai_output/evidence_manifest.json --allow-commands
-Report Answer / Evidence / Limitations / Files changed / Tests run.
-Blocked evidence is not success.
+```bash
+uvx nkama-fact-benchmark agent
 ```
 
-This works only when the agent has a real terminal, `uvx`, and PyPI/network access. If any of
-those are missing, the correct result is `BLOCKED`, not a guessed success.
+It prints the protocol the agent follows for the rest of the session: build under an explicit
+contract, leave real evidence, verify it, and report `BLOCKED` rather than guessing. If the agent
+has no real terminal, no `uvx`, or no network, `BLOCKED` is the correct result — not a guessed
+success.
 
-Field results from this workflow (2026-07): a Claude Fable 5 `agent-run` against the
-browser-benchmark trap passed 5/5 evidence checks at a provider-reported cost of $1.48; two
-browser-game builds (70 unique generated stages each, with SHA-256 uniqueness proofs and
-physics-based completability proofs wired into the manifest as command checks) verified 8/8 and
-7/7 with zero blocked evidence — and the physics check caught a real, human-missed impossible
-jump in a handmade level. Raw logs for these claims are in `evidence/`.
+Everything else — every subcommand and flag — is in the
+[CLI reference](docs/CLI_REFERENCE.md), not here.
 
 ## Documentation
 

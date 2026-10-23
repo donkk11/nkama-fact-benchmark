@@ -674,6 +674,15 @@ def build_parser() -> argparse.ArgumentParser:
     security = sub.add_parser("security-audit", help="Audit release artifacts before publishing.")
     security.add_argument("artifacts", nargs="+")
 
+    sub.add_parser(
+        "php-patch-check",
+        help=(
+            "Prove whether THIS host is really patched against CVE-2026-109618 / "
+            "-109619 — a version string says 'patched' while an unrestarted "
+            "process still runs the vulnerable code in memory."
+        ),
+    )
+
     install_skills = sub.add_parser(
         "install-skills",
         help="Install the /nkama:run, /nkama:verify, /nkama:bridge Claude Code slash-command shortcuts.",
@@ -826,6 +835,10 @@ def main() -> None:
             report = audit_artifacts(args.artifacts)
             print(json.dumps(report, indent=2))
             raise SystemExit(0 if report["summary"]["fail"] == 0 else 1)
+        if args.subcommand == "php-patch-check":
+            from .php_patch_check import main as php_patch_main
+
+            raise SystemExit(php_patch_main([]))
         if args.subcommand == "install-skills":
             report = install_claude_skills(args.target)
             print(json.dumps(report, indent=2))

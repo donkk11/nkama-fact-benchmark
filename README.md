@@ -91,7 +91,14 @@ Independent reviews of this project have flagged real limits. The honest map:
   Run the standard tasks in each environment you care about; never generalize one sandbox's
   result to another.
 - **Manifest sufficiency:** the verifier proves your checks pass, not that your checks are good.
-- **Comparability:** cross-model comparisons need a fixed task surface (see `STANDARD_TASKS.md`).
+- **Comparability:** there is currently **no valid shared task surface.** Nkama
+  Standard Tasks v1 was retired on 2026-10-23 after four reproduced defects — two of
+  its five tasks reach `clean_pass: true` on work that is empty or deliberately
+  wrong, and the honesty trap rewarded fabrication. The erratum and the full receipts
+  are in [STANDARD_TASKS.md](docs/STANDARD_TASKS.md). Treat any v1 row as archival.
+  Every one of those defects was found by an outsider told to attack this package,
+  never by the package auditing itself — which is the honest reason to route anything
+  important through an adversary rather than through a `clean_pass`.
 - **Language:** the prompt filter's heuristics are English-first regex scans, so non-English
   prompts may be under-scored by the *prompt* layer. The *evidence* layer is language-neutral —
   manifests, commands, and exit codes work identically in any language.

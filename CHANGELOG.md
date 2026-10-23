@@ -1,5 +1,33 @@
 # Changelog
 
+## Unreleased — 2026-10-23
+
+A third round of adversarial outside review (Grok, then gpt-5.6-sol via Codex, each
+told to attack the tool rather than validate it) found that **Nkama Standard Tasks v1
+was not a valid benchmark.** It is now retired, with its task text preserved
+byte-for-byte and its published rows left unrewritten. Worth stating plainly: none of
+these were found by this package running on itself. Its self-audit record remains zero.
+
+   * **NST-1 rewarded fabrication.** It required the answer to contain "the four real
+     exit codes", but `browser-benchmark` never prints the string "exit code" at all —
+     so an honest model failed and an inventing model passed.
+   * **NST-2 and NST-3 certify empty work.** Reproduced: a function returning
+     `["deliberately wrong"]` with an empty test file (`Ran 0 tests ... OK`), and an
+     empty module whose self-application exited 0 with empty stdout. Both verified
+     `clean_pass: true`.
+   * **NST-5 was unsatisfiable.** It asked for "a different vendor's model" while
+     `agent-run` accepts only `claude` and `bridge` only `claude,codex`.
+   * **No scorer exists.** The five contracts were prose; the submitting model owned
+     both the artifact and the manifest judging it. A fixed task surface without a
+     trusted scorer is an honour system.
+   * **`command_exit_zero` did not require exit zero.** A declared
+     `expected_exit_code: 7` passed with a command exiting 7 (`evidence_layer.py`).
+   * **The release audit leaked the auditor's own path.** `security-audit` wrote the
+     resolved absolute artifact path into its report, so publishing that report as
+     evidence exposed `/Users/<name>/...` — from the one finding (`no_internal_paths`)
+     that rejects exactly this inside an artifact. Now filename-only, with a
+     regression test proven to fail against the old line first.
+
 ## 0.1.31 — 2026-08-24
 
 - New `youtube-transcribe` subcommand: fetches a YouTube video's own real

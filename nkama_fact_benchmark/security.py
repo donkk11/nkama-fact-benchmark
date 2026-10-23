@@ -187,7 +187,11 @@ def audit_artifact(path: str | Path) -> dict[str, Any]:
 
     rows = [finding.to_dict() for finding in findings]
     return {
-        "artifact": str(artifact),
+        # Filename only, never the resolved path: audit reports are meant to be
+        # published as evidence, and the absolute path would leak the auditor's
+        # own username and directory layout — the exact thing no_internal_paths
+        # rejects inside the artifact.
+        "artifact": artifact.name,
         "status": "pass" if all(row["status"] == "pass" for row in rows) else "fail",
         "file_count": len(names),
         "findings": rows,

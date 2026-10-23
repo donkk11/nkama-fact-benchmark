@@ -2,8 +2,8 @@
 
 Generates NKAMA_STORY.md — the plain-language companion to a run's real
 evidence. Never edits ANSWER.md or evidence_manifest.json; only reads them.
-The rules this module follows are written out in full in NKAMA_VOICE.md at
-the repo root — read that before changing this file.
+The rules this module follows are written out in full in docs/NKAMA_VOICE.md
+— read that before changing this file.
 """
 from __future__ import annotations
 
@@ -166,7 +166,7 @@ def build_story(manifest_path: Path, *, allow_commands: bool = False) -> str:
         f"Verdict: **{'clean_pass' if clean else 'not clean — see above'}**."
     )
     lines.append("")
-    lines.append("*Written by the Nkama Voice — see NKAMA_VOICE.md for the rules it follows.*")
+    lines.append("*Written by the Nkama Voice — see docs/NKAMA_VOICE.md for the rules it follows.*")
     return "\n".join(lines)
 
 

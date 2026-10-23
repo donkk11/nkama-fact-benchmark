@@ -6,7 +6,7 @@ import pathlib, re, unittest
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 BAD = re.compile(r"/Users/|/home/[a-z]")
-TARGETS = ["examples", "README.md", "RECOMMENDED_RUN.md", "README_PYPI.md"]
+TARGETS = ["examples", "README.md", "README_PYPI.md", "docs"]
 
 class NoAbsolutePaths(unittest.TestCase):
     def test_portable_surface_has_no_local_paths(self):

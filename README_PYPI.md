@@ -9,32 +9,14 @@ reports.
 
 ## Quick Start
 
-```bash
-uvx nkama-fact-benchmark
-uvx nkama-fact-benchmark activate
-uvx nkama-fact-benchmark prepare "Build a browser game with tests."
-uvx nkama-fact-benchmark capability-test
-uvx nkama-fact-benchmark inspect path/to/nkama_run
-uvx nkama-fact-benchmark pilot-harness --phase A
-uvx nkama-fact-benchmark selftest
-```
-
-For reproducible runs, pin the version:
+No install step — paste this to a terminal-capable AI coding agent:
 
 ```bash
-uvx --from 'nkama-fact-benchmark==0.1.31' nkama-fact-benchmark selftest
+uvx nkama-fact-benchmark agent
 ```
 
-## What It Helps With
-
-- Turn a normal prompt into a stronger evidence-gated execution prompt.
-- Ask terminal-capable AI agents to keep evidence files as they work.
-- Test whether the current sandbox can write files, run Python, and use `uvx`.
-- Inspect generated folders and classify them as design-only, incomplete,
-  blocked, failed, or verified.
-- Prepare publication-style research harnesses for SWE-bench Verified and
-  FEVER/TruthfulQA scope experiments.
-- Mark missing evidence as `BLOCKED` instead of pretending it passed.
+Full command reference and real shipped evidence: see the
+[GitHub repository](https://github.com/donkk11/nkama-fact-benchmark).
 
 ## Core Rule
 

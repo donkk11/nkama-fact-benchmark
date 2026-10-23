@@ -592,7 +592,7 @@ def build_parser() -> argparse.ArgumentParser:
     inspect = sub.add_parser("inspect", help="Inspect a Nkama run folder and classify what the AI produced.")
     inspect.add_argument("folder")
     inspect.add_argument("--allow-commands", action="store_true")
-    story = sub.add_parser("story", help="Generate NKAMA_STORY.md — the plain-language companion to a run's real evidence (the Nkama Voice; see NKAMA_VOICE.md).")
+    story = sub.add_parser("story", help="Generate NKAMA_STORY.md — the plain-language companion to a run's real evidence (the Nkama Voice; see docs/NKAMA_VOICE.md).")
     story.add_argument("--at", required=True, help="Run folder or evidence_manifest.json path")
     story.add_argument("--allow-commands", action="store_true")
     youtube = sub.add_parser("youtube-transcribe", help="Fetch a YouTube video's own real captions (yt-dlp, never an LLM guess) and wrap them in a nkama evidence run.")

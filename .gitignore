@@ -11,5 +11,8 @@ build/
 claude_probe_assets/
 claude_probe_file.md
 
+# personal stats automation — lives in the private repo, runs from here via LaunchAgent
+tracking/
+
 # editor lock files
 .~lock.*#

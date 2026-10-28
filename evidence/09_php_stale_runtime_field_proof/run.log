@@ -1,48 +1,46 @@
 
-==== ENVIRONMENT ====
-PHP 8.3.36 (cli) (built: Oct 21 2026 16:05:10) (NTS)
+==== ENVIRONMENT - the service is running the PRE-PATCH, vulnerable build ====
+PHP 8.3.35 (cli) (built: Oct 21 2026 00:36:12) (NTS)
 Python 3.13.5
-php-fpm binary on disk = /usr/local/sbin/php-fpm
 
-==== START php-fpm (a real long-lived process that loads the PHP runtime) ====
-php-fpm master PID = 300
+==== START php-fpm on the vulnerable 8.3.35 build (the real runtime under test) ====
+php-fpm master PID = 299
 
-==== SCENARIO A - fresh start, process running the current on-disk binary ====
--- real /proc/300/maps lines for the php-fpm executable:
-c1c418e10000-c1c419d8a000 r-xp 00000000 00:2c 1063389                    /usr/local/sbin/php-fpm
-c1c419d9f000-c1c419e40000 r--p 00f7f000 00:2c 1063389                    /usr/local/sbin/php-fpm
-c1c419e40000-c1c419e47000 rw-p 01020000 00:2c 1063389                    /usr/local/sbin/php-fpm
--- php-patch-check verdict:
+==== SCENARIO 1 - BEFORE any upgrade: tool on the live vulnerable process ====
 {
-  "verdict": "patched",
-  "on_disk": "pass",
+  "verdict": "vulnerable",
+  "on_disk": "fail",
+  "on_disk_version": "8.3.35",
   "running": "pass",
-  "stale_count": 0
+  "deleted": []
 }
 
-==== SIMULATE an upgrade-without-restart (exactly what PHP's advisory warns about) ====
-Replacing /usr/local/sbin/php-fpm on disk via rename, like apt/dpkg unpack-then-rename.
-The running process keeps the OLD, now-unlinked inode mapped in memory.
-replaced.
-on-disk version still reads: PHP 8.3.36 (cli) (built: Oct 21 2026 16:05:10) (NTS)
+==== APPLY THE SECURITY UPGRADE to BOTH on-disk SAPIs (php + php-fpm), NO restart ====
+on-disk 'php -v' is NOW: PHP 8.3.36 (cli) (built: Oct 21 2026 16:05:10) (NTS)
 
-==== SCENARIO B - same process, its code now REPLACED on disk (the false-clean case) ====
--- real /proc/300/maps lines now (note the marker):
-c1c418e10000-c1c419d8a000 r-xp 00000000 00:2c 1063389                    /usr/local/sbin/php-fpm (deleted)
-c1c419d9f000-c1c419e40000 r--p 00f7f000 00:2c 1063389                    /usr/local/sbin/php-fpm (deleted)
-c1c419e40000-c1c419e47000 rw-p 01020000 00:2c 1063389                    /usr/local/sbin/php-fpm (deleted)
--- php-patch-check verdict:
+==== SCENARIO 2 - AFTER the upgrade: the SAME old process is still serving ====
+-- real /proc/299/maps lines for php-fpm (note the marker):
+bafe1b150000-bafe1c0ba000 r-xp 00000000 00:2a 1087426                    /usr/local/sbin/php-fpm (deleted)
+bafe1c0cf000-bafe1c170000 r--p 00f6f000 00:2a 1087426                    /usr/local/sbin/php-fpm (deleted)
+bafe1c170000-bafe1c177000 rw-p 01010000 00:2a 1087426                    /usr/local/sbin/php-fpm (deleted)
 {
   "verdict": "stale_runtime",
   "on_disk": "pass",
+  "on_disk_version": "8.3.36",
   "running": "fail",
   "deleted": [
+    [
+      "/usr/local/sbin/php-fpm"
+    ],
+    [
+      "/usr/local/sbin/php-fpm"
+    ],
     [
       "/usr/local/sbin/php-fpm"
     ]
   ]
 }
 
-==== WHAT php -v ALONE WOULD HAVE TOLD YOU ====
-on-disk version >= the Oct-21 fix, so 'php -v' says PATCHED.
-The process is still executing pre-replacement code. REA-NFB caught what php -v could not.
+==== php -v SAYS PATCHED. THE PROCESS IS STILL RUNNING 8.3.35. ====
+The on-disk version string now reads 8.3.36 (patched), but PID 299 is still
+executing the vulnerable 8.3.35 code in memory. REA-NFB verdict: stale_runtime.

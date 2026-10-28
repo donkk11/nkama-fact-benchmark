@@ -101,3 +101,52 @@ class RefusesToOverclaim(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+# --- regression tests for the false-pass holes found by outside review 2026-10-23 ---
+
+class FalsePassGuards(unittest.TestCase):
+    def _row(self, *, stale, mapping_status, deleted=None):
+        return {
+            "pid": 1, "comm": "php-fpm", "started_at": None,
+            "mappings": {"status": mapping_status, "deleted_mappings": deleted or []},
+            "older_than_binary": None, "stale": stale,
+        }
+
+    def test_unreadable_map_blocks_never_passes(self):
+        # A process whose memory map we could NOT read must not count as clean.
+        rows = [self._row(stale=False, mapping_status="blocked")]
+        self.assertEqual(ppc.summarize_running(rows)["status"], "blocked")
+
+    def test_confirmed_stale_still_fails_even_with_an_unreadable_sibling(self):
+        rows = [
+            self._row(stale=True, mapping_status="fail", deleted=["/x/php-fpm"]),
+            self._row(stale=False, mapping_status="blocked"),
+        ]
+        self.assertEqual(ppc.summarize_running(rows)["status"], "fail")
+
+    def test_all_clean_reads_pass(self):
+        rows = [self._row(stale=False, mapping_status="pass")]
+        self.assertEqual(ppc.summarize_running(rows)["status"], "pass")
+
+
+class WorstSapiWins(unittest.TestCase):
+    def test_worst_ranking_prefers_vulnerable_over_blocked_over_pass(self):
+        # One vulnerable SAPI must not hide behind a patched CLI.
+        results = [
+            {"status": "pass", "binary": "/usr/bin/php"},
+            {"status": "fail", "binary": "/usr/sbin/php-fpm8.2"},
+        ]
+        worst = min(results, key=lambda r: ppc._RANK.get(r["status"], 1))
+        self.assertEqual(worst["status"], "fail")
+
+
+class VanishedWorkerIsNotBlocked(unittest.TestCase):
+    def test_gone_process_is_skipped_not_blocked(self):
+        # php-fpm cycles workers constantly; one exiting mid-scan must not turn a
+        # clean verdict into blocked. Only a genuinely unreadable (still-present)
+        # process blocks.
+        live = {"pid": 2, "comm": "php-fpm", "started_at": None,
+                "mappings": {"status": "pass", "deleted_mappings": []},
+                "older_than_binary": None, "stale": False}
+        self.assertEqual(ppc.summarize_running([live])["status"], "pass")

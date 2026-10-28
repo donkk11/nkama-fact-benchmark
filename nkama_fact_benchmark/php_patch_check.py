@@ -26,6 +26,7 @@ release — see UNFIXED_BRANCHES.
 """
 from __future__ import annotations
 
+import glob
 import json
 import os
 import platform
@@ -114,25 +115,13 @@ def classify_version(version: tuple[int, int, int] | None) -> dict[str, Any]:
     }
 
 
-def disk_build() -> dict[str, Any]:
-    """The PHP the next process to start would load."""
-    binary = shutil.which("php") or shutil.which("php-fpm")
-    if not binary:
-        return {
-            "status": "blocked",
-            "reason": "no php or php-fpm on PATH; nothing on disk to judge",
-            "binary": None,
-        }
+def _classify_binary(binary: str) -> dict[str, Any]:
     try:
         proc = subprocess.run(
             [binary, "-v"], capture_output=True, text=True, timeout=15
         )
     except (OSError, subprocess.SubprocessError) as exc:
-        return {
-            "status": "blocked",
-            "reason": f"could not execute {binary}: {exc}",
-            "binary": binary,
-        }
+        return {"status": "blocked", "reason": f"could not execute {binary}: {exc}", "binary": binary}
     verdict = classify_version(parse_version(proc.stdout or proc.stderr))
     verdict["binary"] = binary
     try:
@@ -140,6 +129,47 @@ def disk_build() -> dict[str, Any]:
     except OSError:
         verdict["binary_mtime"] = None
     return verdict
+
+
+# Worst-wins ordering: a single vulnerable SAPI makes the host vulnerable; an
+# unreadable one means we cannot claim clean; only all-pass is pass.
+_RANK = {"fail": 0, "blocked": 1, "pass": 2}
+
+
+def disk_build() -> dict[str, Any]:
+    """Judge every PHP SAPI on the box, not just the `php` CLI.
+
+    Real weakness this fixes (found by outside review, 2026-10-23): the CLI that
+    `which php` returns can be a different, differently-patched build than the
+    php-fpm or Apache runtime that actually serves web requests — which is the
+    CVE's real attack surface. We classify every PHP binary we can find and
+    report the WORST, so one vulnerable SAPI can't hide behind a patched CLI.
+    """
+    candidates: list[str] = []
+    seen: set[str] = set()
+    for name in ("php-fpm", "php"):
+        found = shutil.which(name)
+        if found and os.path.realpath(found) not in seen:
+            seen.add(os.path.realpath(found))
+            candidates.append(found)
+    for directory in ("/usr/sbin", "/usr/local/sbin", "/usr/bin", "/usr/local/bin"):
+        for match in glob.glob(f"{directory}/php-fpm*"):
+            real = os.path.realpath(match)
+            if real not in seen and os.path.isfile(real):
+                seen.add(real)
+                candidates.append(real)
+    if not candidates:
+        return {
+            "status": "blocked",
+            "reason": "no php or php-fpm found on PATH or in common sbin dirs; nothing on disk to judge",
+            "binary": None,
+            "binaries": [],
+        }
+    results = [_classify_binary(b) for b in candidates]
+    worst = min(results, key=lambda r: _RANK.get(r["status"], 1))
+    chosen = dict(worst)
+    chosen["binaries"] = results  # full per-SAPI detail, not just the worst
+    return chosen
 
 
 def _proc_start_time(pid: int) -> float | None:
@@ -182,7 +212,14 @@ def _stale_mappings(pid: int) -> dict[str, Any]:
     maps = Path(f"/proc/{pid}/maps")
     try:
         content = maps.read_text(errors="ignore")
+    except FileNotFoundError:
+        # The process exited between enumeration and read (php-fpm cycles
+        # workers constantly). A process that is gone cannot be stale and is not
+        # evidence of anything -- drop it, don't block the whole verdict on it.
+        return {"status": "gone"}
     except OSError as exc:
+        # It still exists but we genuinely could not read it (permissions etc.).
+        # THAT is a real "we did not look" and must block, never pass.
         return {"status": "blocked", "reason": f"cannot read {maps}: {exc}"}
     return parse_maps(content)
 
@@ -220,8 +257,10 @@ def running_processes(binary_mtime: float | None) -> dict[str, Any]:
     processes: list[dict[str, Any]] = []
     for item in found["pids"]:
         pid = item["pid"]
-        started = _proc_start_time(pid)
         mappings = _stale_mappings(pid)
+        if mappings.get("status") == "gone":
+            continue  # process exited mid-scan; nothing to judge
+        started = _proc_start_time(pid)
         row: dict[str, Any] = {
             "pid": pid,
             "comm": item["comm"],
@@ -239,11 +278,26 @@ def running_processes(binary_mtime: float | None) -> dict[str, Any]:
         )
         processes.append(row)
 
+    return summarize_running(processes)
+
+
+def summarize_running(processes: list[dict[str, Any]]) -> dict[str, Any]:
+    """Pure verdict over scanned processes. Kept separate so the false-pass
+    guard is testable without a live /proc.
+
+    A process whose /proc/<pid>/maps we could not read is NOT evidence of clean:
+    we simply did not look. It is reported as blocked (unless something is
+    already confirmed stale), never folded into pass. That was the real
+    false-pass found by outside review 2026-10-23 -- an unreadable map counted
+    as not-stale and quietly became a 'patched' verdict.
+    """
     stale = [row for row in processes if row["stale"]]
-    unknown = [row for row in processes if row["older_than_binary"] is None]
+    unreadable = [
+        row for row in processes if row["mappings"].get("status") == "blocked"
+    ]
     if stale:
         status = "fail"
-    elif unknown and not processes:
+    elif unreadable:
         status = "blocked"
     else:
         status = "pass"
@@ -251,6 +305,7 @@ def running_processes(binary_mtime: float | None) -> dict[str, Any]:
         "status": status,
         "process_count": len(processes),
         "stale_count": len(stale),
+        "unreadable_count": len(unreadable),
         "processes": processes,
     }
 
@@ -281,6 +336,14 @@ def check(_argv: list[str] | None = None) -> dict[str, Any]:
         "limitations": [
             "Checks this host only; proves nothing about any other machine.",
             "The stale-runtime check requires /proc and is Linux-only.",
+            "Reading another user's process memory map needs CAP_SYS_PTRACE "
+            "(root on a normal host has it; a default container drops it). When a "
+            "php process map cannot be read, the verdict is 'blocked', never "
+            "'pass' -- the tool refuses to call a host clean it could not inspect.",
+            "The on-disk check classifies every PHP SAPI it can find (php, "
+            "php-fpm, versioned fpm binaries) and reports the worst, so a "
+            "vulnerable php-fpm cannot hide behind a patched CLI. mod_php inside "
+            "Apache is not separately version-probed and should be checked too.",
             "Branches with no upstream fix (8.1 and older) are reported blocked, "
             "not vulnerable, because a distribution backport cannot be seen in a "
             "version string.",
@@ -288,6 +351,9 @@ def check(_argv: list[str] | None = None) -> dict[str, Any]:
             "with its full advisory still pending; this check does not cover it.",
             "'patched' means the two CVEs above, on this host, at this moment. "
             "Restarting a service after this ran invalidates the result.",
+            "The deleted-mapping technique itself is standard (see needrestart / "
+            "checkrestart); what this adds is a PHP-CVE-specific pass/fail verdict "
+            "and machine-readable evidence, not a new detection method.",
         ],
     }
 

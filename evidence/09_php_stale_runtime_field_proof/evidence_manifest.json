@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "allowed_command_prefixes": [],
+  "checks": [
+    {
+      "id": "answer_exists",
+      "name": "Answer file exists",
+      "type": "file_exists",
+      "path": "ANSWER.md"
+    },
+    {
+      "id": "harness_exists",
+      "name": "The container test harness is published",
+      "type": "file_exists",
+      "path": "field_proof.sh"
+    },
+    {
+      "id": "reproducer_exists",
+      "name": "A one-command reproducer is published",
+      "type": "file_exists",
+      "path": "run.sh"
+    },
+    {
+      "id": "captured_log_exists",
+      "name": "The real captured run output is published",
+      "type": "file_exists",
+      "path": "run.log"
+    },
+    {
+      "id": "baseline_patched",
+      "name": "A freshly started, unmodified process verified as patched",
+      "type": "file_contains",
+      "path": "run.log",
+      "text": "\"verdict\": \"patched\""
+    },
+    {
+      "id": "deleted_mapping_observed",
+      "name": "The real /proc maps showed the replaced binary marked (deleted)",
+      "type": "file_contains",
+      "path": "run.log",
+      "text": "/usr/local/sbin/php-fpm (deleted)"
+    },
+    {
+      "id": "stale_runtime_caught",
+      "name": "After the on-disk replace, the tool flipped to stale_runtime",
+      "type": "file_contains",
+      "path": "run.log",
+      "text": "\"verdict\": \"stale_runtime\""
+    },
+    {
+      "id": "version_string_still_says_patched",
+      "name": "php -v kept reporting the fixed version through both scenarios",
+      "type": "file_contains",
+      "path": "run.log",
+      "text": "PHP 8.3.36"
+    },
+    {
+      "id": "answer_states_limits",
+      "name": "The answer states its own scope and limits",
+      "type": "file_contains",
+      "path": "ANSWER.md",
+      "text": "Honest scope"
+    },
+    {
+      "id": "no_exploit_claimed",
+      "name": "The answer states no exploit was written or run",
+      "type": "file_contains",
+      "path": "ANSWER.md",
+      "text": "No exploit, no PoC"
+    }
+  ]
+}
